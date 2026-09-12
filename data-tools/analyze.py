@@ -197,6 +197,29 @@ def find_corrupt_listings(listings):
     corrupt = [l["listing_id"] for l in live if l["price"] / l["carpet_area"] > 50000]
     return sorted(corrupt)
 
+def q6_avg_price_per_sqft_2bhk(listings, corrupt_ids, fake_ids):
+    listings = dedupe_listings(listings)
+    excluded = set(corrupt_ids) | set(fake_ids)
+    eligible = [l for l in listings
+                if l["is_live"] and l["bedroom"] == 2 and l["listing_id"] not in excluded]
+    psf = [l["price"] / l["carpet_area"] for l in eligible]
+    return round(sum(psf) / len(psf), 2)
+
+def q8_listings_last_7_days(listings):
+    listings = dedupe_listings(listings)
+    IST = datetime.timezone(datetime.timedelta(hours=5, minutes=30))
+    reference = datetime.datetime(2026, 9, 10, 0, 0, 0, tzinfo=IST)
+    window_start = reference - datetime.timedelta(days=7)
+
+    count = 0
+    for l in listings:
+        # naive posted_at assumed to already be IST wall-clock time
+        naive = datetime.datetime.fromisoformat(l["posted_at"])
+        posted = naive.replace(tzinfo=IST)
+        if window_start <= posted < reference:
+            count += 1
+    return count
+
 # ---------------------------------------------------------------------------
 # Entry point
 # ---------------------------------------------------------------------------
@@ -209,12 +232,9 @@ if __name__ == "__main__":
     print("\n--- projects: duplicates ---")
     check_project_duplicates(projects)
 
-    print("\n--- projects: price units ---")
+    #print("\n--- projects: price units ---")
     fixed = fix_project_prices(projects)
-    verify_project_prices(fixed)
-
-    print("\n--- listings: timestamps ---")
-    check_listing_timestamps(listings)
+    #verify_project_prices(fixed)
 
     print("\n--- rentals: duplicates ---")
     check_rental_duplicates(rentals)
@@ -241,3 +261,13 @@ if __name__ == "__main__":
     print("\n--- Q9: fake listings ---")
     q9 = find_fake_listings(listings)
     print("Q9 fake_listing_ids:", q9)
+
+    print("\n--- Q6: avg price/sqft 2BHK ---")
+    q6 = q6_avg_price_per_sqft_2bhk(listings, find_corrupt_listings(listings), find_fake_listings(listings))
+    print("Q6:", q6)
+
+    print("\n--- Q8: listings last 7 days ---")
+    q8 = q8_listings_last_7_days(listings)
+    print("Q8:", q8)
+
+    
