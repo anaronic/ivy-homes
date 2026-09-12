@@ -4,15 +4,23 @@ analyze.py — investigation + answer derivation for Ivy Homes assignment.
 Each function documents one hypothesis test or one final answer.
 Failed hypotheses are kept (not deleted) with a note on why they were
 replaced — see README for the full story.
+
+NOTE ON DATASET SCALE: an earlier fetch (using a 24h-token assumption
+per the docs) silently truncated mid-pull because tokens actually
+expire in 15 minutes. That partial pull still happened to contain all
+50 unique underlying records (just fewer duplicate copies of each),
+so every answer/finding below was re-verified unaffected except Q1,
+which depends on the raw retrievable count.
 """
 
 import json
 import datetime
 import statistics
-from collections import Counter
+from collections import Counter, defaultdict
 from pathlib import Path
 
 DATA_DIR = Path(__file__).resolve().parent / "data"
+REFERENCE_TOTAL_LISTINGS = 3731  # authoritative total from the live API
 
 
 def load(name):
@@ -20,15 +28,58 @@ def load(name):
         return json.load(fh)
 
 
+def _check_identical_copies(records, id_field, label):
+    """Generic dedup-safety check: confirms all copies of the same id
+    are byte-identical before we treat 'take any one copy' as safe."""
+    groups = defaultdict(list)
+    for r in records:
+        groups[r[id_field]].append(r)
+    diffs = [rid for rid, copies in groups.items()
+             if len(set(json.dumps(c, sort_keys=True) for c in copies)) > 1]
+    print(f"{label}: {len(records)} raw, {len(groups)} unique, "
+          f"{len(diffs)} with inconsistent copies")
+    return diffs
+
+
 # ---------------------------------------------------------------------------
-# Projects: duplicate records
+# Listings: duplicates
+# ---------------------------------------------------------------------------
+
+def check_listing_duplicates(listings):
+    """Doc implies each listing_id is globally unique and returned
+    once. Reality: raw /v1/listings pull contains far more records
+    than unique listings - each of 50 unique listing_ids is repeated
+    identically many times (~75x at full scale, verified byte-
+    identical across copies)."""
+    return _check_identical_copies(listings, "listing_id", "listings")
+
+
+def dedupe_listings(listings):
+    return list({l["listing_id"]: l for l in listings}.values())
+
+
+# ---------------------------------------------------------------------------
+# Rentals: duplicates
+# ---------------------------------------------------------------------------
+
+def check_rental_duplicates(rentals):
+    """Same duplication pattern as listings/projects: 50 unique
+    listing_ids, each repeated identically (8x at the scale tested)."""
+    return _check_identical_copies(rentals, "listing_id", "rentals")
+
+
+def dedupe_rentals(rentals):
+    return list({r["listing_id"]: r for r in rentals}.values())
+
+
+# ---------------------------------------------------------------------------
+# Projects: duplicates
 # ---------------------------------------------------------------------------
 
 def check_project_duplicates(projects):
-    """Doc implies each collection record is unique. Reality: every
-    project_id appears exactly 3 times in the raw /v1/projects pull."""
-    ids = [p["project_id"] for p in projects]
-    print(f"raw records: {len(ids)}, unique project_ids: {len(set(ids))}")
+    """Same duplication pattern: 50 unique project_ids, each repeated
+    identically (3x at the scale tested)."""
+    return _check_identical_copies(projects, "project_id", "projects")
 
 
 def dedupe_projects(projects):
@@ -45,13 +96,13 @@ def to_rupees(value):
     Raw value >= 10 => lakhs
 
     FAILED HYPOTHESIS (kept for the record): originally assumed
-    price_min is always lakhs and price_max always crores. That worked
-    for some projects but produced 27/50 wildly-wrong per-sqft values
-    (e.g. 81 INR/sqft or 594,078 INR/sqft) once checked at scale.
-    Testing raw (price_min, price_max) pairs for the outliers showed
-    the unit tracks the magnitude of each value independently, not its
-    field position — e.g. P40008: (1.36, 3.09) are both crores;
-    P40003: (63.0, 90.3) are both lakhs.
+    price_min is always lakhs and price_max always crores. That
+    worked for some projects but produced 27/50 wildly-wrong per-sqft
+    values (e.g. 81 INR/sqft or 594,078 INR/sqft) once checked at
+    scale. Testing raw (price_min, price_max) pairs for the outliers
+    showed the unit tracks the magnitude of each value independently,
+    not its field position - e.g. P40008: (1.36, 3.09) are both
+    crores; P40003: (63.0, 90.3) are both lakhs.
     """
     return value * 1e7 if value < 10 else value * 1e5
 
@@ -74,14 +125,108 @@ def fix_project_prices(projects):
 
 
 def verify_project_prices(fixed, lo=2000, hi=20000):
-    """Sanity check: after correction, every psf value should sit in a
-    plausible Chennai band, and real_max should never be < real_min."""
+    """Sanity check: after correction, every psf value should sit in
+    a plausible Chennai band, and real_max should never be < real_min."""
     violations = [f for f in fixed if f["real_max"] < f["real_min"]]
     outliers = [f for f in fixed if not (lo <= f["psf_min"] <= hi) or not (lo <= f["psf_max"] <= hi)]
     print(f"min<=max violations: {len(violations)}")
     print(f"psf outliers outside [{lo}, {hi}]: {len(outliers)}")
     for o in outliers:
-        print(o)
+        print(" ", o)
+
+
+# ---------------------------------------------------------------------------
+# Listings: timestamp format investigation
+# ---------------------------------------------------------------------------
+
+def check_listing_timestamps(listings):
+    """Doc claims ISO 8601 UTC with Z suffix 'everywhere'. Reality:
+    listing records have naive timestamps (no Z), while rentals'
+    posted_at correctly carries Z. Checked hour-of-day distribution
+    for a diurnal signal to infer the true timezone - distribution is
+    flat across all 24 hours (synthetic data, no signal). Assumption
+    going forward: treat naive listing timestamps as IST (documented
+    locale, matches REFERENCE's timezone) - stated as an assumption
+    in the README, not a proven fact."""
+    no_z = [l for l in listings if not l["posted_at"].endswith("Z")]
+    print(f"listings missing Z suffix: {len(no_z)} / {len(listings)}")
+    hours = Counter(
+        datetime.datetime.fromisoformat(l["posted_at"]).hour for l in listings
+    )
+    print("hour-of-day distribution:", sorted(hours.items()))
+
+
+# ---------------------------------------------------------------------------
+# Q1 — total listing records
+# ---------------------------------------------------------------------------
+
+def q1_total_listing_records():
+    """Use the API's own authoritative 'total' from /v1/listings, not
+    the raw fetched array length - the fetch loop's stop condition
+    checks after appending a full page, so it can slightly overshoot
+    (3750 fetched vs 3731 authoritative total)."""
+    return REFERENCE_TOTAL_LISTINGS
+
+
+# ---------------------------------------------------------------------------
+# Q3 — active listings
+# ---------------------------------------------------------------------------
+
+def q3_active_listings(listings):
+    listings = dedupe_listings(listings)
+    live = [l for l in listings if l["is_live"]]
+    print(f"{len(live)} / {len(listings)} live")
+    return len(live)
+
+
+# ---------------------------------------------------------------------------
+# Q4 — corrupt listings
+# ---------------------------------------------------------------------------
+
+def find_corrupt_listings(listings):
+    """Structural checks (floor > total_floors, non-positive fields,
+    coordinates outside city bounds) caught nothing beyond one false
+    positive (a 'plot' with 0 bedrooms - correct, not corrupt, plots
+    legitimately have no bedroom/bathroom/floor count).
+
+    The real corrupt records surfaced via price-per-sqft: 4 listings
+    (all website=magichomes) have carpet_area far too small for their
+    bedroom count (e.g. a 4BHK at 144 sqft), producing >90k INR/sqft
+    against a normal ~3k-13k band. One of these four
+    (MAG-4003885) also contains a prompt-injection instruction in its
+    description field, targeting automated tools - not followed,
+    logged separately as its own finding."""
+    listings = dedupe_listings(listings)
+    live = [l for l in listings if l["is_live"]]
+    corrupt = [l["listing_id"] for l in live if l["price"] / l["carpet_area"] > 50000]
+    return sorted(corrupt)
+
+
+# ---------------------------------------------------------------------------
+# Q5 — total monthly rent, assigned locality
+# ---------------------------------------------------------------------------
+
+def q5_total_monthly_rent(rentals, locality="perungudi"):
+    rentals = dedupe_rentals(rentals)
+    matched = [r for r in rentals if r["locality"].strip().lower() == locality]
+    prices = [r["price"] for r in matched]
+    print(f"{locality}: {len(matched)} records")
+    if prices:
+        print(f"price range: {min(prices)} - {max(prices)}, median: {sorted(prices)[len(prices)//2]}")
+    return sum(prices)
+
+
+# ---------------------------------------------------------------------------
+# Q6 — avg price/sqft, 2BHK, live, excluding corrupt+fake
+# ---------------------------------------------------------------------------
+
+def q6_avg_price_per_sqft_2bhk(listings, corrupt_ids, fake_ids):
+    listings = dedupe_listings(listings)
+    excluded = set(corrupt_ids) | set(fake_ids)
+    eligible = [l for l in listings
+                if l["is_live"] and l["bedroom"] == 2 and l["listing_id"] not in excluded]
+    psf = [l["price"] / l["carpet_area"] for l in eligible]
+    return round(sum(psf) / len(psf), 2)
 
 
 # ---------------------------------------------------------------------------
@@ -94,116 +239,8 @@ def q7_costliest_project(fixed):
 
 
 # ---------------------------------------------------------------------------
-# Listings: timestamp format investigation
+# Q8 — listings posted in the 7 days before REFERENCE
 # ---------------------------------------------------------------------------
-
-def check_listing_timestamps(listings):
-    """Doc claims ISO 8601 UTC with Z suffix 'everywhere'. Reality:
-    all 950 listing records have naive timestamps (no Z), while
-    rentals' posted_at correctly carries Z. Checked hour-of-day
-    distribution for a diurnal signal to infer the true timezone —
-    distribution is flat across all 24 hours (synthetic data, no
-    signal). Assumption going forward: treat naive listing timestamps
-    as IST (documented locale, matches REFERENCE's timezone) — stated
-    explicitly in README as an assumption, not a proven fact."""
-    no_z = [l for l in listings if not l["posted_at"].endswith("Z")]
-    print(f"listings missing Z suffix: {len(no_z)} / {len(listings)}")
-
-    hours = Counter(
-        datetime.datetime.fromisoformat(l["posted_at"]).hour for l in listings
-    )
-    print("hour-of-day distribution:", sorted(hours.items()))
-
-def find_fake_listings(listings):
-    """Tested several fraud signals on live listings: price-per-sqft
-    cliff on the cheap end (none - lowest 10 are normal 6.9k-13.3k
-    range), exact description-text reuse (none found), and
-    is_verified=False (too broad - 18/44 live listings, no distinct
-    cluster, just normal ops backlog).
-
-    The one real signal: posted_by_contact +912002689284 appears on
-    two listings (100-4000289, SQU-4001810) under the same name
-    ("Priya Rao") but contradictory posted_by roles - one as 'agent',
-    one as 'owner'. The same person cannot legitimately be both the
-    agent and the independent owner of two different properties;
-    this is consistent with a single fake identity used to make an
-    agent-sourced or bait listing appear to be a separate individual
-    owner.
-    """
-    listings = dedupe_listings(listings)
-    live = [l for l in listings if l["is_live"]]
-
-    from collections import defaultdict
-    by_contact = defaultdict(list)
-    for l in live:
-        by_contact[l["posted_by_contact"]].append(l)
-
-    fake_ids = []
-    for contact, ls in by_contact.items():
-        if len(ls) > 1:
-            roles = {l["posted_by"] for l in ls}
-            if len(roles) > 1:  # same contact, contradictory roles
-                fake_ids.extend(l["listing_id"] for l in ls)
-
-    return sorted(fake_ids)
-
-def check_rental_duplicates(rentals):
-    """Same duplication pattern as /v1/projects: raw records repeat.
-    400 raw rental records -> only 50 unique listing_ids (8x repeat)."""
-    ids = [r["listing_id"] for r in rentals]
-    print(f"raw records: {len(ids)}, unique listing_ids: {len(set(ids))}")
-
-
-def dedupe_rentals(rentals):
-    return list({r["listing_id"]: r for r in rentals}.values())
-
-
-def q5_total_monthly_rent(rentals, locality="perungudi"):
-    rentals = dedupe_rentals(rentals)
-    matched = [r for r in rentals if r["locality"].strip().lower() == locality]
-    prices = [r["price"] for r in matched]
-    print(f"{locality}: {len(matched)} records")
-    if prices:
-        print(f"price range: {min(prices)} - {max(prices)}, median: {sorted(prices)[len(prices)//2]}")
-    return sum(prices)
-
-
-def check_listing_duplicates(listings):
-    """Same pattern as /v1/projects and /v1/rentals: raw records
-    repeat identically. 950 raw listing records -> 50 unique
-    listing_ids (19x each)."""
-    ids = [l["listing_id"] for l in listings]
-    print(f"raw records: {len(ids)}, unique listing_ids: {len(set(ids))}")
-
-def dedupe_listings(listings):
-    return list({l["listing_id"]: l for l in listings}.values())
-
-def q3_active_listings(listings):
-    listings = dedupe_listings(listings)
-    live = [l for l in listings if l["is_live"]]
-    print(f"{len(live)} / {len(listings)} live")
-    return len(live)
-
-def find_corrupt_listings(listings):
-    """Structural checks (floor > total_floors, non-positive fields,
-    coordinates outside city bounds) caught nothing beyond one false
-    positive (a 'plot' with 0 bedrooms - correct, not corrupt).
-    The real corrupt records surfaced via price-per-sqft: 4 listings
-    (all website=magichomes) have carpet_area far too small for their
-    bedroom count (e.g. a 4BHK at 144 sqft), producing >90k INR/sqft
-    against a normal ~3k-13k band."""
-    listings = dedupe_listings(listings)
-    live = [l for l in listings if l["is_live"]]
-    corrupt = [l["listing_id"] for l in live if l["price"] / l["carpet_area"] > 50000]
-    return sorted(corrupt)
-
-def q6_avg_price_per_sqft_2bhk(listings, corrupt_ids, fake_ids):
-    listings = dedupe_listings(listings)
-    excluded = set(corrupt_ids) | set(fake_ids)
-    eligible = [l for l in listings
-                if l["is_live"] and l["bedroom"] == 2 and l["listing_id"] not in excluded]
-    psf = [l["price"] / l["carpet_area"] for l in eligible]
-    return round(sum(psf) / len(psf), 2)
 
 def q8_listings_last_7_days(listings):
     listings = dedupe_listings(listings)
@@ -220,6 +257,81 @@ def q8_listings_last_7_days(listings):
             count += 1
     return count
 
+
+# ---------------------------------------------------------------------------
+# Q9 — fake listings
+# ---------------------------------------------------------------------------
+
+def find_fake_listings(listings):
+    """Tested several fraud signals on live listings: price-per-sqft
+    cliff on the cheap end (none - lowest 10 are a normal 6.9k-13.3k
+    range), exact description-text reuse (none found), and
+    is_verified=False (too broad - 18/44 live listings, no distinct
+    cluster, just normal ops backlog).
+
+    The one real signal: posted_by_contact +912002689284 appears on
+    two listings (100-4000289, SQU-4001810) under the same name
+    ("Priya Rao") but contradictory posted_by roles - one 'agent',
+    one 'owner'. The same person cannot legitimately be both the
+    agent and the independent owner of two different properties;
+    consistent with a single fake identity used to make an
+    agent-sourced/bait listing appear to be a separate individual
+    owner."""
+    listings = dedupe_listings(listings)
+    live = [l for l in listings if l["is_live"]]
+
+    by_contact = defaultdict(list)
+    for l in live:
+        by_contact[l["posted_by_contact"]].append(l)
+
+    fake_ids = []
+    for contact, ls in by_contact.items():
+        if len(ls) > 1 and len({l["posted_by"] for l in ls}) > 1:
+            fake_ids.extend(l["listing_id"] for l in ls)
+
+    return sorted(fake_ids)
+
+
+# ---------------------------------------------------------------------------
+# Q10 — projects with wrong listing count
+# ---------------------------------------------------------------------------
+
+def q10_projects_wrong_count_v2(projects, listings, use_dedup=True, verbose=False):
+    projects = dedupe_projects(projects)
+    working_listings = dedupe_listings(listings) if use_dedup else listings
+    actual_counts = Counter(l["project_id"] for l in working_listings if l["project_id"])
+
+    wrong = 0
+    for p in projects:
+        actual = actual_counts.get(p["project_id"], 0)
+        if actual != p["total_listings"]:
+            wrong += 1
+            if verbose:
+                print(f"  {p['project_id']}: documented={p['total_listings']}, actual={actual}")
+    return wrong
+
+def q10_projects_wrong_count(projects, listings, verbose=False):
+    """Result (43) is robust across three interpretations tested:
+    raw listing count per project, deduped count, and live-only
+    count all agree - so the mismatch isn't an artifact of duplicate
+    or is_live handling, total_listings is genuinely wrong for these
+    43 projects regardless of which comparison basis is used."""
+    projects = dedupe_projects(projects)
+    listings = dedupe_listings(listings)
+    actual_counts = Counter(l["project_id"] for l in listings if l["project_id"])
+
+    wrong = 0
+    for p in projects:
+        actual = actual_counts.get(p["project_id"], 0)
+        if actual != p["total_listings"]:
+            wrong += 1
+            if verbose:
+                print(f"  {p['project_id']}: documented={p['total_listings']}, actual={actual}")
+    return wrong
+
+
+
+
 # ---------------------------------------------------------------------------
 # Entry point
 # ---------------------------------------------------------------------------
@@ -229,45 +341,43 @@ if __name__ == "__main__":
     listings = load("listings")
     rentals = load("rentals")
 
-    print("\n--- projects: duplicates ---")
+    print("\n--- duplicate checks ---")
     check_project_duplicates(projects)
-
-    #print("\n--- projects: price units ---")
-    fixed = fix_project_prices(projects)
-    #verify_project_prices(fixed)
-
-    print("\n--- rentals: duplicates ---")
     check_rental_duplicates(rentals)
-
-    print("\n--- listings: duplicates ---")
     check_listing_duplicates(listings)
 
-    print("\n--- Q3: active listings ---")
+    print("\n--- projects: price units ---")
+    fixed = fix_project_prices(projects)
+    verify_project_prices(fixed)
+
+    print("\n--- listings: timestamps ---")
+    check_listing_timestamps(listings)
+
+    print("\n=== ANSWERS ===")
+
+    q1 = q1_total_listing_records()
+    print("Q1 total_listing_records:", q1)
+
     q3 = q3_active_listings(listings)
     print("Q3 active_listings:", q3)
 
-    print("\n--- Q5: total monthly rent ---")
-    q5 = q5_total_monthly_rent(dedupe_rentals(rentals))
-    print("Q5 total_monthly_rent:", q5)
-
-    print("\n--- Q7: costliest project ---")
-    q7 = q7_costliest_project(fixed)
-    print(q7)
-
-    print("\n--- Q4: corrupt listings ---")
     q4 = find_corrupt_listings(listings)
     print("Q4 corrupt_listing_ids:", q4)
 
-    print("\n--- Q9: fake listings ---")
+    q5 = q5_total_monthly_rent(rentals)
+    print("Q5 total_monthly_rent:", q5)
+
+    q7 = q7_costliest_project(fixed)
+    print("Q7 costliest_project:", q7)
+
     q9 = find_fake_listings(listings)
     print("Q9 fake_listing_ids:", q9)
 
-    print("\n--- Q6: avg price/sqft 2BHK ---")
-    q6 = q6_avg_price_per_sqft_2bhk(listings, find_corrupt_listings(listings), find_fake_listings(listings))
-    print("Q6:", q6)
+    q6 = q6_avg_price_per_sqft_2bhk(listings, q4, q9)
+    print("Q6 avg_price_per_sqft_2bhk:", q6)
 
-    print("\n--- Q8: listings last 7 days ---")
     q8 = q8_listings_last_7_days(listings)
-    print("Q8:", q8)
+    print("Q8 listings_last_7_days:", q8)
 
-    
+    q10 = q10_projects_wrong_count(projects, listings)
+    print("Q10 projects with wrong listing counts:", q10)

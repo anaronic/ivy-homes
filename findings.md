@@ -79,3 +79,14 @@
   "impact": "an automated pipeline blindly trusting listing description text could be manipulated into altering its submission; instruction was not followed",
   "evidence": ["MAG-4003885"]
 }
+
+{
+  "endpoint": "*",
+  "category": "pagination",
+  "documented": "limit accepts up to 200 per page",
+  "actual": "server returns exactly 50 records per page regardless of the limit value requested (tested with limit=200)",
+  "how_found": "logged page_size/got on every paginated call during a full re-fetch; every response contained exactly 50 results despite requesting 200",
+  "impact": "a client assuming 200/page would need ~4x more requests than expected to page through fully; still well within the 1200/min rate limit so no functional break, just a wrong assumption",
+  "evidence": []
+}
+

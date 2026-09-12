@@ -39,11 +39,15 @@ def fetch_all(path, extra_params=None):
         time.sleep(0.05)  # be polite, you have 1200/min anyway
     return results
 
-#listings = fetch_all("/v1/listings")
-#json.dump(listings, open("data/listings.json", "w"), indent=2)
+listings = fetch_all("/v1/listings")
+json.dump(listings, open("data/listings.json", "w"), indent=2)
 
 rentals = fetch_all("/v1/rentals")
 json.dump(rentals, open("data/rentals.json", "w"), indent=2)
 
 projects = fetch_all("/v1/projects")
 json.dump(projects, open("data/projects.json", "w"), indent=2)
+
+# in fetch_all.py, after fetching listings:
+r = session.get(f"{BASE}/v1/listings", params={"page": 1, "limit": 50})
+print("authoritative total:", r.json()["total"])
