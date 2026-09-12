@@ -48,3 +48,14 @@
   "impact": "any aggregate over /v1/rentals (e.g. total_monthly_rent) would be inflated 8x without deduping first",
   "evidence":['R4000001', 'R4000491']
 }
+
+
+{
+  "endpoint": "/v1/listings",
+  "category": "duplicates",
+  "documented": "collection endpoint returns each record once; every listing_id is globally unique",
+  "actual": "950 raw records returned, but only 50 unique listing_ids, each repeated identically 19 times",
+  "how_found": "deduped by listing_id (950 -> 50); confirmed all 19 copies per id are byte-identical; ratio is a clean integer (19.0), consistent with the same deliberate pattern seen in /v1/projects (3x) and /v1/rentals (8x)",
+  "impact": "Q1 (total_listing_records) should count the raw retrievable records as documented, but every other listings-derived question (Q3, Q4, Q6, Q8, Q9) must dedupe first or will be inflated 19x",
+  "evidence": ['MAG-4001518', '100-4000035']
+}

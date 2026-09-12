@@ -137,10 +137,18 @@ def check_rental_duplicates(rentals):
     ids = [r["listing_id"] for r in rentals]
     print(f"raw records: {len(ids)}, unique listing_ids: {len(set(ids))}")
 
-
 def dedupe_rentals(rentals):
     return list({r["listing_id"]: r for r in rentals}.values())
 
+def check_listing_duplicates(listings):
+    """Same pattern as /v1/projects and /v1/rentals: raw records
+    repeat identically. 950 raw listing records -> 50 unique
+    listing_ids (19x each)."""
+    ids = [l["listing_id"] for l in listings]
+    print(f"raw records: {len(ids)}, unique listing_ids: {len(set(ids))}")
+
+def dedupe_listings(listings):
+    return list({l["listing_id"]: l for l in listings}.values())
 
 # ---------------------------------------------------------------------------
 # Entry point
@@ -163,6 +171,9 @@ if __name__ == "__main__":
 
     print("\n--- rentals: duplicates ---")
     check_rental_duplicates(rentals)
+
+    print("\n--- listings: duplicates ---")
+    check_listing_duplicates(listings)
 
     print("\n--- Q5: total monthly rent ---")
     q5 = q5_total_monthly_rent(dedupe_rentals(rentals))
