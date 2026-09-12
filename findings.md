@@ -1,0 +1,39 @@
+{
+  "endpoint": "*",
+  "category": "auth",
+  "documented": "API key is appended as a ?api_key= query parameter",
+  "actual": "API key must be sent as an X-API-Key header; requests without it (including /auth/login) return 401 with {\"detail\": \"missing X-API-Key header\"}",
+  "how_found": "attempted login per the documented query-param method, got 401",
+  "impact": "every single API call would fail if built per the docs",
+  "evidence": []
+}
+
+{
+  "endpoint": "/auth/login",
+  "category": "auth",
+  "documented": "response contains a `token` field, valid for 86400 seconds (24h), with no refresh flow",
+  "actual": "response contains `access_token` and `refresh_token`; `expires_in` is 900 (15 min); a working refresh flow exists at /auth/refresh",
+  "how_found": "inspected raw login response",
+  "impact": "a session built assuming a 24h token per the docs would silently start failing after 15 minutes with no refresh logic in place",
+  "evidence": []
+}
+
+{
+  "endpoint": "/v1/projects",
+  "category": "units",
+  "documented": "price_min and price_max are in rupees",
+  "actual": "both fields are in mixed lakhs/crores; the unit is determined per-value by magnitude (raw value < 10 => crores, else => lakhs), not fixed per field",
+  "how_found": "computed price-per-sqft assuming lakhs/crores by field position; 27 of the resulting values were absurd outliers; re-deriving unit per-value by magnitude brought all 50 projects into a consistent 5k-12k INR/sqft band",
+  "impact": "Q7 and any price comparison across projects would be wrong by 1-2 orders of magnitude without this correction",
+  "evidence": ["P40008", "P40003", "P40001"]
+}
+
+{
+  "endpoint": "/v1/projects",
+  "category": "duplicates",
+  "documented": "collection endpoint returns each record once",
+  "actual": "the 150 raw records returned are exactly 50 unique project_ids each repeated 3 times",
+  "how_found": "deduped by project_id and got exactly 1/3 the row count",
+  "impact": "Q7, Q10 and any project count would be inflated 3x without deduping first",
+  "evidence": ["P40001", "P40002", "P40003"]
+}
