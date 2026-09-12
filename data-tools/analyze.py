@@ -114,10 +114,38 @@ def check_listing_timestamps(listings):
     )
     print("hour-of-day distribution:", sorted(hours.items()))
 
+def find_fake_listings(listings):
+    """Tested several fraud signals on live listings: price-per-sqft
+    cliff on the cheap end (none - lowest 10 are normal 6.9k-13.3k
+    range), exact description-text reuse (none found), and
+    is_verified=False (too broad - 18/44 live listings, no distinct
+    cluster, just normal ops backlog).
 
-# ---------------------------------------------------------------------------
-# Q5 — total monthly rent, assigned locality
-# ---------------------------------------------------------------------------
+    The one real signal: posted_by_contact +912002689284 appears on
+    two listings (100-4000289, SQU-4001810) under the same name
+    ("Priya Rao") but contradictory posted_by roles - one as 'agent',
+    one as 'owner'. The same person cannot legitimately be both the
+    agent and the independent owner of two different properties;
+    this is consistent with a single fake identity used to make an
+    agent-sourced or bait listing appear to be a separate individual
+    owner.
+    """
+    listings = dedupe_listings(listings)
+    live = [l for l in listings if l["is_live"]]
+
+    from collections import defaultdict
+    by_contact = defaultdict(list)
+    for l in live:
+        by_contact[l["posted_by_contact"]].append(l)
+
+    fake_ids = []
+    for contact, ls in by_contact.items():
+        if len(ls) > 1:
+            roles = {l["posted_by"] for l in ls}
+            if len(roles) > 1:  # same contact, contradictory roles
+                fake_ids.extend(l["listing_id"] for l in ls)
+
+    return sorted(fake_ids)
 
 def check_rental_duplicates(rentals):
     """Same duplication pattern as /v1/projects: raw records repeat.
@@ -209,3 +237,7 @@ if __name__ == "__main__":
     print("\n--- Q4: corrupt listings ---")
     q4 = find_corrupt_listings(listings)
     print("Q4 corrupt_listing_ids:", q4)
+
+    print("\n--- Q9: fake listings ---")
+    q9 = find_fake_listings(listings)
+    print("Q9 fake_listing_ids:", q9)
