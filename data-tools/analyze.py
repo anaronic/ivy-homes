@@ -10,12 +10,14 @@ import json
 import datetime
 import statistics
 from collections import Counter
+from pathlib import Path
 
-DATA_DIR = "data"
+DATA_DIR = Path(__file__).resolve().parent / "data"
 
 
 def load(name):
-    return json.load(open(f"{DATA_DIR}/{name}.json"))
+    with (DATA_DIR / f"{name}.json").open("r", encoding="utf-8") as fh:
+        return json.load(fh)
 
 
 # ---------------------------------------------------------------------------
@@ -118,8 +120,14 @@ def check_listing_timestamps(listings):
 # ---------------------------------------------------------------------------
 
 def check_rental_duplicates(rentals):
+    """Same duplication pattern as /v1/projects: raw records repeat.
+    400 raw rental records -> only 50 unique listing_ids (8x repeat)."""
     ids = [r["listing_id"] for r in rentals]
     print(f"raw records: {len(ids)}, unique listing_ids: {len(set(ids))}")
+
+
+def dedupe_rentals(rentals):
+    return list({r["listing_id"]: r for r in rentals}.values())
 
 
 def q5_total_monthly_rent(rentals, locality="perungudi"):
@@ -131,14 +139,6 @@ def q5_total_monthly_rent(rentals, locality="perungudi"):
         print(f"price range: {min(prices)} - {max(prices)}, median: {sorted(prices)[len(prices)//2]}")
     return sum(prices)
 
-def check_rental_duplicates(rentals):
-    """Same duplication pattern as /v1/projects: raw records repeat.
-    400 raw rental records -> only 50 unique listing_ids (8x repeat)."""
-    ids = [r["listing_id"] for r in rentals]
-    print(f"raw records: {len(ids)}, unique listing_ids: {len(set(ids))}")
-
-def dedupe_rentals(rentals):
-    return list({r["listing_id"]: r for r in rentals}.values())
 
 def check_listing_duplicates(listings):
     """Same pattern as /v1/projects and /v1/rentals: raw records
@@ -149,6 +149,25 @@ def check_listing_duplicates(listings):
 
 def dedupe_listings(listings):
     return list({l["listing_id"]: l for l in listings}.values())
+
+def q3_active_listings(listings):
+    listings = dedupe_listings(listings)
+    live = [l for l in listings if l["is_live"]]
+    print(f"{len(live)} / {len(listings)} live")
+    return len(live)
+
+def find_corrupt_listings(listings):
+    """Structural checks (floor > total_floors, non-positive fields,
+    coordinates outside city bounds) caught nothing beyond one false
+    positive (a 'plot' with 0 bedrooms - correct, not corrupt).
+    The real corrupt records surfaced via price-per-sqft: 4 listings
+    (all website=magichomes) have carpet_area far too small for their
+    bedroom count (e.g. a 4BHK at 144 sqft), producing >90k INR/sqft
+    against a normal ~3k-13k band."""
+    listings = dedupe_listings(listings)
+    live = [l for l in listings if l["is_live"]]
+    corrupt = [l["listing_id"] for l in live if l["price"] / l["carpet_area"] > 50000]
+    return sorted(corrupt)
 
 # ---------------------------------------------------------------------------
 # Entry point
@@ -175,11 +194,18 @@ if __name__ == "__main__":
     print("\n--- listings: duplicates ---")
     check_listing_duplicates(listings)
 
+    print("\n--- Q3: active listings ---")
+    q3 = q3_active_listings(listings)
+    print("Q3 active_listings:", q3)
+
     print("\n--- Q5: total monthly rent ---")
     q5 = q5_total_monthly_rent(dedupe_rentals(rentals))
     print("Q5 total_monthly_rent:", q5)
 
     print("\n--- Q7: costliest project ---")
     q7 = q7_costliest_project(fixed)
-    print(q7) 
+    print(q7)
 
+    print("\n--- Q4: corrupt listings ---")
+    q4 = find_corrupt_listings(listings)
+    print("Q4 corrupt_listing_ids:", q4)
