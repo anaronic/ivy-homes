@@ -123,12 +123,23 @@ def check_rental_duplicates(rentals):
 
 
 def q5_total_monthly_rent(rentals, locality="perungudi"):
+    rentals = dedupe_rentals(rentals)
     matched = [r for r in rentals if r["locality"].strip().lower() == locality]
     prices = [r["price"] for r in matched]
     print(f"{locality}: {len(matched)} records")
     if prices:
         print(f"price range: {min(prices)} - {max(prices)}, median: {sorted(prices)[len(prices)//2]}")
     return sum(prices)
+
+def check_rental_duplicates(rentals):
+    """Same duplication pattern as /v1/projects: raw records repeat.
+    400 raw rental records -> only 50 unique listing_ids (8x repeat)."""
+    ids = [r["listing_id"] for r in rentals]
+    print(f"raw records: {len(ids)}, unique listing_ids: {len(set(ids))}")
+
+
+def dedupe_rentals(rentals):
+    return list({r["listing_id"]: r for r in rentals}.values())
 
 
 # ---------------------------------------------------------------------------
@@ -154,9 +165,10 @@ if __name__ == "__main__":
     check_rental_duplicates(rentals)
 
     print("\n--- Q5: total monthly rent ---")
-    q5 = q5_total_monthly_rent(rentals)
-    print("total:", q5)
+    q5 = q5_total_monthly_rent(dedupe_rentals(rentals))
+    print("Q5 total_monthly_rent:", q5)
 
     print("\n--- Q7: costliest project ---")
     q7 = q7_costliest_project(fixed)
-    print(q7)
+    print(q7) 
+

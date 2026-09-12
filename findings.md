@@ -37,3 +37,14 @@
   "impact": "Q7, Q10 and any project count would be inflated 3x without deduping first",
   "evidence": ["P40001", "P40002", "P40003"]
 }
+
+
+{
+  "endpoint": "/v1/rentals",
+  "category": "duplicates",
+  "documented": "collection endpoint returns each record once",
+  "actual": "400 raw records returned, but only 50 unique listing_ids — each repeated exactly 8 times with identical fields across all copies",
+  "how_found": "deduped by listing_id (400 -> 50); confirmed all 8 copies per id are byte-identical by comparing sorted JSON dumps, zero inconsistent groups",
+  "impact": "any aggregate over /v1/rentals (e.g. total_monthly_rent) would be inflated 8x without deduping first",
+  "evidence":['R4000001', 'R4000491']
+}
