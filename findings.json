@@ -1,4 +1,5 @@
-{
+[
+  {
   "endpoint": "*",
   "category": "auth",
   "documented": "API key is appended as a ?api_key= query parameter",
@@ -7,7 +8,7 @@
   "impact": "every single API call would fail if built per the docs",
   "evidence": []
 }
-
+,
 {
   "endpoint": "/auth/login",
   "category": "auth",
@@ -17,7 +18,7 @@
   "impact": "a session built assuming a 24h token per the docs would silently start failing after 15 minutes with no refresh logic in place",
   "evidence": []
 }
-
+,
 {
   "endpoint": "/v1/projects",
   "category": "units",
@@ -27,7 +28,7 @@
   "impact": "Q7 and any price comparison across projects would be wrong by 1-2 orders of magnitude without this correction",
   "evidence": ["P40008", "P40003", "P40001"]
 }
-
+,
 {
   "endpoint": "/v1/projects",
   "category": "duplicates",
@@ -37,8 +38,7 @@
   "impact": "Q7, Q10 and any project count would be inflated 3x without deduping first",
   "evidence": ["P40001", "P40002", "P40003"]
 }
-
-
+,
 {
   "endpoint": "/v1/rentals",
   "category": "duplicates",
@@ -46,10 +46,9 @@
   "actual": "400 raw records returned, but only 50 unique listing_ids — each repeated exactly 8 times with identical fields across all copies",
   "how_found": "deduped by listing_id (400 -> 50); confirmed all 8 copies per id are byte-identical by comparing sorted JSON dumps, zero inconsistent groups",
   "impact": "any aggregate over /v1/rentals (e.g. total_monthly_rent) would be inflated 8x without deduping first",
-  "evidence":['R4000001', 'R4000491']
+  "evidence":["R4000001", "R4000491"]
 }
-
-
+,
 {
   "endpoint": "/v1/listings",
   "category": "duplicates",
@@ -57,9 +56,9 @@
   "actual": "950 raw records returned, but only 50 unique listing_ids, each repeated identically 19 times",
   "how_found": "deduped by listing_id (950 -> 50); confirmed all 19 copies per id are byte-identical; ratio is a clean integer (19.0), consistent with the same deliberate pattern seen in /v1/projects (3x) and /v1/rentals (8x)",
   "impact": "Q1 (total_listing_records) should count the raw retrievable records as documented, but every other listings-derived question (Q3, Q4, Q6, Q8, Q9) must dedupe first or will be inflated 19x",
-  "evidence": ['MAG-4001518', '100-4000035']
+  "evidence": ["MAG-4001518", "100-4000035"] 
 }
-
+,
 {
   "endpoint": "/v1/listings",
   "category": "data_quality",
@@ -69,7 +68,7 @@
   "impact": "these 4 records physically cannot exist as described and would badly skew any price-per-sqft aggregate (Q6) if not excluded",
   "evidence": ["MAG-4003885", "MAG-4000039", "MAG-4002264", "MAG-4003492"]
 }
-
+,
 {
   "endpoint": "/v1/listings",
   "category": "data_quality",
@@ -79,7 +78,7 @@
   "impact": "an automated pipeline blindly trusting listing description text could be manipulated into altering its submission; instruction was not followed",
   "evidence": ["MAG-4003885"]
 }
-
+,
 {
   "endpoint": "*",
   "category": "pagination",
@@ -89,4 +88,4 @@
   "impact": "a client assuming 200/page would need ~4x more requests than expected to page through fully; still well within the 1200/min rate limit so no functional break, just a wrong assumption",
   "evidence": []
 }
-
+]

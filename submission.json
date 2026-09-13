@@ -1,0 +1,32 @@
+{
+  "api_key": "IVY26-XXXXXXXXXXXX",
+  "candidate": {
+    "name": "",
+    "email": "",
+    "repo_url": "",
+    "demo_url": ""
+  },
+  "answers": {
+  "total_listing_records": 3731,
+  "unique_properties": 50,
+  "active_listings": 44,
+  "corrupt_listing_ids": ["MAG-4000039", "MAG-4002264", "MAG-4003492", "MAG-4003885"],
+  "total_monthly_rent": 113500,
+  "avg_price_per_sqft_2bhk": 9067.63,
+  "costliest_project": { "project_id": "P40049", "price_max_inr": 31100000 },
+  "listings_last_7_days": 1,
+  "fake_listing_ids": ["100-4000289", "SQU-4001810"],
+  "projects_with_wrong_listing_count": 43
+},
+  "findings": [
+    {
+      "endpoint": "",
+      "category": "",
+      "documented": "",
+      "actual": "",
+      "how_found": "",
+      "impact": "",
+      "evidence": []
+    }
+  ]
+}
