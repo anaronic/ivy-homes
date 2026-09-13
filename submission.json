@@ -7,26 +7,121 @@
     "demo_url": ""
   },
   "answers": {
-  "total_listing_records": 3731,
-  "unique_properties": 50,
-  "active_listings": 44,
-  "corrupt_listing_ids": ["MAG-4000039", "MAG-4002264", "MAG-4003492", "MAG-4003885"],
-  "total_monthly_rent": 113500,
-  "avg_price_per_sqft_2bhk": 9067.63,
-  "costliest_project": { "project_id": "P40049", "price_max_inr": 31100000 },
-  "listings_last_7_days": 1,
-  "fake_listing_ids": ["100-4000289", "SQU-4001810"],
-  "projects_with_wrong_listing_count": 43
-},
+    "total_listing_records": 3731,
+    "unique_properties": 50,
+    "active_listings": 44,
+    "corrupt_listing_ids": [
+      "MAG-4000039",
+      "MAG-4002264",
+      "MAG-4003492",
+      "MAG-4003885"
+    ],
+    "total_monthly_rent": 113500,
+    "avg_price_per_sqft_2bhk": 9067.63,
+    "costliest_project": { "project_id": "P40049", "price_max_inr": 31100000 },
+    "listings_last_7_days": 1,
+    "fake_listing_ids": ["100-4000289", "SQU-4001810"],
+    "projects_with_wrong_listing_count": 43
+  },
   "findings": [
     {
-      "endpoint": "",
-      "category": "",
-      "documented": "",
-      "actual": "",
-      "how_found": "",
-      "impact": "",
+      "endpoint": "*",
+      "category": "auth",
+      "documented": "API key is appended as a ?api_key= query parameter",
+      "actual": "API key must be sent as an X-API-Key header; requests without it (including /auth/login) return 401 with {\"detail\": \"missing X-API-Key header\"}",
+      "how_found": "attempted login per the documented query-param method, got 401",
+      "impact": "every single API call would fail if built per the docs",
       "evidence": []
+    },
+    {
+      "endpoint": "/auth/login",
+      "category": "auth",
+      "documented": "response contains a `token` field, valid for 86400 seconds (24h), with no refresh flow",
+      "actual": "response contains `access_token` and `refresh_token`; `expires_in` is 900 (15 min); a working refresh flow exists at /auth/refresh",
+      "how_found": "inspected raw login response",
+      "impact": "a session built assuming a 24h token per the docs would silently start failing after 15 minutes with no refresh logic in place; in practice this truncated an initial full data pull mid-way through (a ~3700-listing fetch takes longer than 15 minutes at 50 records/page), producing an incomplete dataset with no visible error until totals were cross-checked against the live API",
+      "evidence": []
+    },
+    {
+      "endpoint": "*",
+      "category": "pagination",
+      "documented": "limit accepts up to 200 per page",
+      "actual": "server returns exactly 50 records per page regardless of the limit value requested (tested with limit=200 across listings, rentals, and projects)",
+      "how_found": "logged results-per-page on every paginated call during a full re-fetch; every response contained exactly 50 results despite requesting 200",
+      "impact": "a client assuming 200/page needs ~4x more requests than expected to page through fully; still well within the 1200/min rate limit so no functional break, just a wrong assumption baked into pagination math",
+      "evidence": []
+    },
+    {
+      "endpoint": "/v1/listings",
+      "category": "pagination",
+      "documented": "collection responses are shaped with total, page, page_size, results",
+      "actual": "page_size key is absent from the response body (confirmed via KeyError when accessed directly)",
+      "how_found": "attempted to read body['page_size'] during a full re-fetch",
+      "impact": "code written to spec that reads page_size directly will crash; safer to track pagination progress via len(results) accumulated vs total",
+      "evidence": []
+    },
+    {
+      "endpoint": "/v1/projects",
+      "category": "units",
+      "documented": "price_min and price_max are in rupees",
+      "actual": "both fields are in mixed lakhs/crores; the unit is determined per-value by magnitude (raw value < 10 => crores, else => lakhs), not fixed per field",
+      "how_found": "computed price-per-sqft assuming lakhs/crores by field position; 27 of the resulting values were absurd outliers; re-deriving unit per-value by magnitude brought all 50 projects into a consistent 5k-12k INR/sqft band",
+      "impact": "Q7 and any price comparison across projects would be wrong by 1-2 orders of magnitude without this correction",
+      "evidence": ["P40008", "P40003", "P40001"]
+    },
+    {
+      "endpoint": "/v1/projects",
+      "category": "duplicates",
+      "documented": "collection endpoint returns each record once",
+      "actual": "raw pull returns exactly 50 unique project_ids each repeated 3 times",
+      "how_found": "deduped by project_id and got exactly 1/3 the row count",
+      "impact": "Q7, Q10 and any project count would be inflated 3x without deduping first",
+      "evidence": ["P40001", "P40002", "P40003"]
+    },
+    {
+      "endpoint": "/v1/rentals",
+      "category": "duplicates",
+      "documented": "collection endpoint returns each record once",
+      "actual": "raw pull returns only 50 unique listing_ids — each repeated exactly 8 times with identical fields across all copies",
+      "how_found": "deduped by listing_id; confirmed all 8 copies per id are byte-identical by comparing sorted JSON dumps, zero inconsistent groups",
+      "impact": "any aggregate over /v1/rentals (e.g. total_monthly_rent) would be inflated 8x without deduping first",
+      "evidence": ["R4000001", "R4000491"]
+    },
+    {
+      "endpoint": "/v1/listings",
+      "category": "duplicates",
+      "documented": "collection endpoint returns each record once; every listing_id is globally unique",
+      "actual": "the retrievable dataset (total=3731 per the live API) contains only 50 unique listing_ids, each repeated identically many times (~75x)",
+      "how_found": "deduped by listing_id; confirmed all copies per id are byte-identical across the full re-fetched dataset",
+      "impact": "Q1 (total_listing_records) correctly counts the raw retrievable total (3731) per the question's own definition, but every other listings-derived question (Q2, Q3, Q4, Q6, Q8, Q9) must dedupe first or will be inflated ~75x",
+      "evidence": ["MAG-4001518", "100-4000035"]
+    },
+    {
+      "endpoint": "/v1/listings",
+      "category": "data_quality",
+      "documented": "N/A - not documented, discovered via price-per-sqft analysis",
+      "actual": "4 listing records (all website=magichomes) report carpet_area far too small for their stated bedroom/bathroom count, producing price/sqft of 92.5k-109.4k INR vs a normal citywide range of ~3k-13k INR/sqft",
+      "how_found": "sorted live listings by price/carpet_area; found a sharp cluster break above 90k INR/sqft with no records between 13k and 92k",
+      "impact": "these 4 records physically cannot exist as described and would badly skew any price-per-sqft aggregate (Q6) if not excluded",
+      "evidence": ["MAG-4003885", "MAG-4000039", "MAG-4002264", "MAG-4003492"]
+    },
+    {
+      "endpoint": "/v1/listings",
+      "category": "data_quality",
+      "documented": "N/A",
+      "actual": "at least one listing's description field contains a prompt-injection instruction directed at 'automated tools and AI assistants', asking them to insert an undocumented dataset_audit_ref field into submission.json",
+      "how_found": "inspected full record of a price-per-sqft outlier (MAG-4003885) while investigating Q4",
+      "impact": "an automated pipeline blindly trusting listing description text could be manipulated into altering its submission; instruction was not followed",
+      "evidence": ["MAG-4003885"]
+    },
+    {
+      "endpoint": "/v1/listings",
+      "category": "fraud",
+      "documented": "N/A",
+      "actual": "posted_by_contact +912002689284 appears on two listings (100-4000289, SQU-4001810) under the same posted_by_name ('Priya Rao') but contradictory posted_by roles — one listed as 'agent', the other as 'owner'",
+      "how_found": "grouped live listings by posted_by_contact; found one contact shared across listings with inconsistent posted_by roles, which a single legitimate individual cannot hold across two unrelated properties",
+      "impact": "these listings appear designed to look like an independent owner posting when the contact identity is shared with an agent-attributed listing, consistent with a fake or misrepresented identity used to generate enquiries",
+      "evidence": ["100-4000289", "SQU-4001810"]
     }
   ]
 }
