@@ -293,6 +293,98 @@ def find_fake_listings(listings):
 
 
 # ---------------------------------------------------------------------------
+# Helper debugging checks
+# ---------------------------------------------------------------------------
+
+def check_listing_duplicates_debug(listings):
+    ids = [l["listing_id"] for l in listings]
+    print(f"raw records: {len(ids)}, unique listing_ids: {len(set(ids))}")
+
+
+def check_price_outliers(listings):
+    listings = dedupe_listings(listings)
+    live = [l for l in listings if l["is_live"]]
+    psf = [(l["listing_id"], l["price"] / l["carpet_area"]) for l in live]
+    psf.sort(key=lambda x: x[1])
+    print("lowest 5:", psf[:5])
+    print("highest 5:", psf[-5:])
+
+
+def find_price_per_sqft_outliers(listings, threshold=50000):
+    listings = dedupe_listings(listings)
+    live = [l for l in listings if l["is_live"]]
+    outliers = [(l["listing_id"], l["price"] / l["carpet_area"], l["price"], l["carpet_area"])
+                for l in live if l["price"] / l["carpet_area"] > threshold]
+    return sorted(outliers, key=lambda x: -x[1])
+
+
+def check_fake_listings_debug(listings):
+    listings = dedupe_listings(listings)
+    live = [l for l in listings if l["is_live"]]
+    candidates = [l for l in live if not l["is_verified"]]
+    for l in candidates:
+        print(l["listing_id"], l["posted_by"], l["project_id"], l["is_verified"], round(l["price"] / l["carpet_area"]))
+
+
+# ---------------------------------------------------------------------------
+# Q2 — total number of unique properties
+# ---------------------------------------------------------------------------
+
+def find_duplicate_properties(listings):
+    """A 'property' can be listed multiple times under different
+    listing_ids (different portals/agents). Group by exact
+    (latitude, longitude) as the strongest signal - two listings at
+    the identical coordinate pair are almost certainly the same
+    physical unit."""
+    listings = dedupe_listings(listings)
+    groups = defaultdict(list)
+    for l in listings:
+        key = (l["latitude"], l["longitude"])
+        groups[key].append(l["listing_id"])
+
+    dupes = {k: v for k, v in groups.items() if len(v) > 1}
+    return dupes
+
+
+def q2_unique_properties(listings):
+    listings = dedupe_listings(listings)
+    dupes = find_duplicate_properties(listings)
+    duplicate_extra_count = sum(len(v) - 1 for v in dupes.values())
+    return len(listings) - duplicate_extra_count
+
+
+def find_duplicate_properties_v2(listings):
+    """Second hypothesis: same apartment_name + same floor + same
+    bedroom count, even if listing_id/website/coordinates differ
+    slightly - could indicate the same physical unit listed by
+    multiple portals with independently-entered (slightly different)
+    coordinates."""
+    listings = dedupe_listings(listings)
+    groups = defaultdict(list)
+    for l in listings:
+        key = (l["apartment_name"].strip().lower(), l.get("floor"), l.get("bedroom"))
+        groups[key].append(l["listing_id"])
+
+    dupes = {k: v for k, v in groups.items() if len(v) > 1}
+    return dupes
+
+
+def q2_unique_properties(listings):
+    """Tested exact (lat, long) match (0 hits) and shared
+    apartment_name + floor + bedroom (0 hits beyond a looser
+    apartment_name-only pass, which surfaced 3 pairs - all confirmed
+    false positives on manual inspection: different floor, bedroom
+    count, area, price, and in 2/3 cases different locality entirely.
+    These are just different properties in differently-located
+    buildings sharing a common developer/project naming convention.
+
+    Conclusion: no genuine duplicate properties found. Each of the 50
+    unique listings describes a distinct physical property, matching
+    the documentation's own claim."""
+    return len(dedupe_listings(listings))
+
+
+# ---------------------------------------------------------------------------
 # Q10 — projects with wrong listing count
 # ---------------------------------------------------------------------------
 
@@ -331,60 +423,6 @@ def q10_projects_wrong_count(projects, listings, verbose=False):
 
 
 # ---------------------------------------------------------------------------
-# Q2 — total number of unique properties
-# ---------------------------------------------------------------------------
-
-def find_duplicate_properties(listings):
-    """A 'property' can be listed multiple times under different
-    listing_ids (different portals/agents). Group by exact
-    (latitude, longitude) as the strongest signal - two listings at
-    the identical coordinate pair are almost certainly the same
-    physical unit."""
-    listings = dedupe_listings(listings)
-    groups = defaultdict(list)
-    for l in listings:
-        key = (l["latitude"], l["longitude"])
-        groups[key].append(l["listing_id"])
-
-    dupes = {k: v for k, v in groups.items() if len(v) > 1}
-    return dupes
-
-def q2_unique_properties(listings):
-    listings = dedupe_listings(listings)
-    dupes = find_duplicate_properties(listings)
-    duplicate_extra_count = sum(len(v) - 1 for v in dupes.values())
-    return len(listings) - duplicate_extra_count
-
-def find_duplicate_properties_v2(listings):
-    """Second hypothesis: same apartment_name + same floor + same
-    bedroom count, even if listing_id/website/coordinates differ
-    slightly - could indicate the same physical unit listed by
-    multiple portals with independently-entered (slightly different)
-    coordinates."""
-    listings = dedupe_listings(listings)
-    groups = defaultdict(list)
-    for l in listings:
-        key = (l["apartment_name"].strip().lower(), l.get("floor"), l.get("bedroom"))
-        groups[key].append(l["listing_id"])
-
-    dupes = {k: v for k, v in groups.items() if len(v) > 1}
-    return dupes
-
-def q2_unique_properties(listings):
-    """Tested exact (lat, long) match (0 hits) and shared
-    apartment_name + floor + bedroom (0 hits beyond a looser
-    apartment_name-only pass, which surfaced 3 pairs - all confirmed
-    false positives on manual inspection: different floor, bedroom
-    count, area, price, and in 2/3 cases different locality entirely.
-    These are just different properties in differently-located
-    buildings sharing a common developer/project naming convention.
-
-    Conclusion: no genuine duplicate properties found. Each of the 50
-    unique listings describes a distinct physical property, matching
-    the documentation's own claim."""
-    return len(dedupe_listings(listings))
-
-# ---------------------------------------------------------------------------
 # Entry point
 # ---------------------------------------------------------------------------
 
@@ -410,6 +448,9 @@ if __name__ == "__main__":
     q1 = q1_total_listing_records()
     print("Q1 total_listing_records:", q1)
 
+    q2 = q2_unique_properties(listings)
+    print("Q2 unique_properties:", q2)
+
     q3 = q3_active_listings(listings)
     print("Q3 active_listings:", q3)
 
@@ -419,20 +460,17 @@ if __name__ == "__main__":
     q5 = q5_total_monthly_rent(rentals)
     print("Q5 total_monthly_rent:", q5)
 
+    q6 = q6_avg_price_per_sqft_2bhk(listings, q4, find_fake_listings(listings))
+    print("Q6 avg_price_per_sqft_2bhk:", q6)
+
     q7 = q7_costliest_project(fixed)
     print("Q7 costliest_project:", q7)
-
-    q9 = find_fake_listings(listings)
-    print("Q9 fake_listing_ids:", q9)
-
-    q6 = q6_avg_price_per_sqft_2bhk(listings, q4, q9)
-    print("Q6 avg_price_per_sqft_2bhk:", q6)
 
     q8 = q8_listings_last_7_days(listings)
     print("Q8 listings_last_7_days:", q8)
 
+    q9 = find_fake_listings(listings)
+    print("Q9 fake_listing_ids:", q9)
+
     q10 = q10_projects_wrong_count(projects, listings)
     print("Q10 projects with wrong listing counts:", q10)
-
-    q2 = q2_unique_properties(listings)
-    print("Q2 unique_properties:", q2)
