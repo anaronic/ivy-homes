@@ -119,6 +119,12 @@ export default function ListingsPage() {
             >
               Saved
             </Link>
+            <Link
+              href="/rentals"
+              className="rounded border border-neutral-300 px-3 py-2 text-sm"
+            >
+              Rentals
+            </Link>
             <button
               type="button"
               onClick={() => {

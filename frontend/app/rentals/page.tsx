@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { BASE_URL, apiHeaders } from "@/lib/api";
@@ -82,9 +83,14 @@ export default function RentalsPage() {
             <p className="text-sm uppercase tracking-[0.2em] text-neutral-500">Ivy Homes</p>
             <h1 className="text-3xl font-bold">Rentals</h1>
           </div>
-          <a href="/listings" className="text-sm text-neutral-500 hover:underline">
-            ← Back to listings
-          </a>
+          <div className="flex items-center gap-3">
+            <Link href="/listings" className="rounded border border-neutral-300 px-3 py-2 text-sm">
+              Listings
+            </Link>
+            <Link href="/favourites" className="rounded border border-neutral-300 px-3 py-2 text-sm">
+              Saved
+            </Link>
+          </div>
         </div>
 
         {error ? <p className="text-red-700">{error}</p> : null}
@@ -95,9 +101,10 @@ export default function RentalsPage() {
             <p className="mb-3 text-sm text-neutral-500">{items.length} rentals</p>
             <div className="grid gap-4 md:grid-cols-2">
               {items.map((item) => (
-                <div
+                <Link
                   key={item.listing_id}
-                  className="rounded border border-neutral-200 bg-white p-4 shadow-sm"
+                  href={`/rentals/${item.listing_id}`}
+                  className="block rounded border border-neutral-200 bg-white p-4 shadow-sm hover:border-neutral-400"
                 >
                   <p className="text-xs uppercase tracking-[0.2em] text-neutral-500">
                     {item.locality}
@@ -123,7 +130,7 @@ export default function RentalsPage() {
                       </p>
                     ) : null}
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
           </>
