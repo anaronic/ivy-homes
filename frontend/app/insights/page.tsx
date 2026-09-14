@@ -261,19 +261,50 @@ export default function InsightsPage() {
           )}
         </section>
 
-        <section className="surface-card rounded-[24px] border border-amber-200 bg-amber-50/80 p-5 sm:p-6">
-          <h2 className="text-xl font-semibold tracking-tight text-slate-900">Data Quality Findings</h2>
-          <p className="mt-2 text-sm text-slate-600">
-            Discovered while building this app — see <code>submission.json</code> for full details.
-          </p>
-          <ul className="mt-4 space-y-3 text-sm text-slate-700">
-            <li><strong className="text-slate-900">Missing endpoints:</strong> <code>/v1/analytics/summary</code> and <code>/v1/favourites</code> are not live on the API; the app replaces the first with live-computed city metrics and the second with a local saved-listings fallback.</li>
-            <li><strong className="text-slate-900">Duplicate records:</strong> every listing/rental/project is returned repeated many times by the API (~75x for listings, 8x rentals, 3x projects) — only <strong>50 unique</strong> records exist per collection despite raw totals in the thousands.</li>
-            <li><strong className="text-slate-900">4 corrupt listings</strong> report a carpet area far too small for their bedroom count (e.g. a 4BHK at 144 sqft), producing impossible ₹/sqft figures (92.5k–109.4k vs a normal ~3k–13k range).</li>
-            <li><strong className="text-slate-900">2 likely fake listings</strong> share a phone number under contradictory seller roles (one &quot;agent,&quot; one &quot;owner&quot;) for two unrelated properties.</li>
-            <li><strong className="text-slate-900">43 of 50 projects</strong> report a <code>total_listings</code> count that does not match the actual number of listings tied to that project.</li>
-            <li><strong className="text-slate-900">Project prices</strong> are documented as rupees but are actually a mix of lakhs and crores, determined by each value&apos;s own magnitude rather than which field it is in — corrected throughout this app.</li>
-          </ul>
+        <section className="surface-card rounded-[28px] border border-amber-200 bg-gradient-to-br from-amber-50 via-white to-orange-50 p-5 sm:p-6 shadow-[0_18px_45px_-32px_rgba(15,23,42,0.35)]">
+          <div className="flex flex-col gap-3 border-b border-amber-200/80 pb-4 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="section-label text-amber-700">Findings</p>
+              <h2 className="mt-2 text-xl font-semibold tracking-tight text-slate-900 sm:text-2xl">What the API and docs disagree on</h2>
+            </div>
+            <p className="text-xs font-medium uppercase tracking-[0.18em] text-amber-700">live evidence</p>
+          </div>
+
+          <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+            <div className="rounded-2xl border border-slate-200 bg-white/80 p-4 shadow-sm">
+              <p className="text-[0.68rem] font-bold uppercase tracking-[0.18em] text-slate-500">Auth</p>
+              <p className="mt-2 text-sm leading-6 text-slate-700"><strong className="text-slate-900">Key mismatch:</strong> the API rejects the documented query-param flow and requires the <code>X-API-Key</code> header. Login also responds with access + refresh tokens instead of a single 24h token.</p>
+            </div>
+            <div className="rounded-2xl border border-slate-200 bg-white/80 p-4 shadow-sm">
+              <p className="text-[0.68rem] font-bold uppercase tracking-[0.18em] text-slate-500">Pagination</p>
+              <p className="mt-2 text-sm leading-6 text-slate-700"><strong className="text-slate-900">Server reality:</strong> every paginated endpoint returns exactly 50 rows per page regardless of the requested limit, and the documented <code>page_size</code> field is absent.</p>
+            </div>
+            <div className="rounded-2xl border border-slate-200 bg-white/80 p-4 shadow-sm">
+              <p className="text-[0.68rem] font-bold uppercase tracking-[0.18em] text-slate-500">Missing endpoints</p>
+              <p className="mt-2 text-sm leading-6 text-slate-700"><strong className="text-slate-900">Broken docs:</strong> <code>/v1/analytics/summary</code> and <code>/v1/favourites</code> return 404 on this API, so the app falls back to live computed metrics and browser-side saved listings.</p>
+            </div>
+            <div className="rounded-2xl border border-slate-200 bg-white/80 p-4 shadow-sm">
+              <p className="text-[0.68rem] font-bold uppercase tracking-[0.18em] text-slate-500">Duplicates</p>
+              <p className="mt-2 text-sm leading-6 text-slate-700"><strong className="text-slate-900">Raw totals are misleading:</strong> listings repeat ~75x, rentals repeat 8x, and projects repeat 3x. Only 50 unique properties exist in the current city dataset.</p>
+            </div>
+            <div className="rounded-2xl border border-slate-200 bg-white/80 p-4 shadow-sm">
+              <p className="text-[0.68rem] font-bold uppercase tracking-[0.18em] text-slate-500">Data quality</p>
+              <p className="mt-2 text-sm leading-6 text-slate-700"><strong className="text-slate-900">4 corrupt listings:</strong> carpet areas are impossible for the bedroom counts, producing ₹/sqft values around 92.5k–109.4k instead of the normal ~3k–13k range.</p>
+            </div>
+            <div className="rounded-2xl border border-slate-200 bg-white/80 p-4 shadow-sm">
+              <p className="text-[0.68rem] font-bold uppercase tracking-[0.18em] text-slate-500">Fraud</p>
+              <p className="mt-2 text-sm leading-6 text-slate-700"><strong className="text-slate-900">Fake enquiry listings:</strong> two records share a phone number under contradictory roles and are treated as generated enquiry bait rather than genuine seller posts.</p>
+            </div>
+          </div>
+
+          <div className="mt-6 rounded-2xl border border-slate-200 bg-slate-900 p-5 text-slate-100 shadow-inner">
+            <h3 className="text-base font-semibold tracking-tight text-white">Key conclusions</h3>
+            <ul className="mt-4 space-y-3 text-sm leading-6 text-slate-200">
+              <li><span className="font-semibold text-white">Duplicate handling is mandatory:</span> raw listing totals are not the same as real unique property counts, and any answers derived from rows without deduplication are inflated.</li>
+              <li><span className="font-semibold text-white">Project pricing needs unit normalization:</span> the documented rupee assumption is wrong for many project values because the API mixes lakhs and crores by magnitude rather than by field.</li>
+              <li><span className="font-semibold text-white">The dataset needs quality filtering:</span> corrupt records and fake enquiry listings distort price-per-sqft and any aggregate based on raw rows.</li>
+            </ul>
+          </div>
         </section>
       </div>
     </main>
