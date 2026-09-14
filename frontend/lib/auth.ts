@@ -1,5 +1,11 @@
 import { BASE_URL, apiHeaders } from "./api";
 
+const VALID_DEMO_EMAILS = new Set([
+  "demo1@ivy.homes",
+  "demo2@ivy.homes",
+  "demo3@ivy.homes",
+]);
+
 interface LoginResponse {
   access_token: string;
   refresh_token: string;
@@ -7,11 +13,21 @@ interface LoginResponse {
   user: { email: string };
 }
 
+export function isValidDemoEmail(email: string): boolean {
+  return VALID_DEMO_EMAILS.has(email.trim().toLowerCase());
+}
+
 export async function login(email: string, password: string) {
+  const emailToUse = email.trim().toLowerCase();
+
+  if (!isValidDemoEmail(emailToUse)) {
+    throw new Error("Invalid demo email");
+  }
+
   const res = await fetch(`${BASE_URL}/auth/login`, {
     method: "POST",
     headers: { ...apiHeaders(), "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password }),
+    body: JSON.stringify({ email: emailToUse, password }),
   });
   if (!res.ok) throw new Error("Login failed");
   const data: LoginResponse = await res.json();

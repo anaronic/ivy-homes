@@ -47,6 +47,7 @@ export default function LoginPage() {
               className="input-shell w-full"
               required
             />
+            <p className="text-xs text-slate-500">Valid demo emails: demo1@ivy.homes, demo2@ivy.homes, demo3@ivy.homes</p>
           </div>
 
           <div className="space-y-2">
