@@ -88,6 +88,16 @@ export default function ListingsPage() {
     };
   }, [router]);
 
+  function formatAreaName(value?: string) {
+    if (!value) return "";
+    return value
+      .toLowerCase()
+      .split(" ")
+      .filter(Boolean)
+      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+      .join(" ");
+  }
+
   const filtered = useMemo(() => {
     const query = search.trim().toLowerCase();
 
@@ -114,7 +124,8 @@ export default function ListingsPage() {
   }, [items, locality, bedroom, furnishing, minPrice, maxPrice, search]);
 
   const localities = useMemo(
-    () => Array.from(new Set(items.map((i) => i.locality).filter(Boolean))).sort(),
+    () =>
+      Array.from(new Set(items.map((i) => formatAreaName(i.locality)).filter(Boolean))).sort(),
     [items]
   );
 
@@ -213,7 +224,7 @@ export default function ListingsPage() {
                       className="card-link"
                     >
                       <p className="text-[0.68rem] font-bold uppercase tracking-[0.2em] text-slate-500">
-                        {item.locality ?? "Locality unavailable"}
+                        {formatAreaName(item.locality) || "Locality unavailable"}
                       </p>
                       <h2 className="mt-2 text-xl font-semibold tracking-tight text-slate-900">
                         {item.apartment_name ?? item.listing_id}
