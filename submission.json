@@ -140,6 +140,15 @@
       "how_found": "frontend detail page failed to load with the documented singular path; tested both singular and plural paths directly, singular 404s, plural returns the listing",
       "impact": "any client built per the documented singular path cannot fetch individual listings at all",
       "evidence": []
+    },
+    {
+      "endpoint": "/v1/favourites",
+      "category": "missing_endpoint",
+      "documented": "GET/POST /v1/favourites, DELETE /v1/favourites/{id}",
+      "actual": "every variant tested (favourites, favorites, /user/favourites, /me/favourites, plural/singular combinations) returns an identical generic 404, indistinguishable from a deliberately nonsense path - suggests this endpoint may not exist on the running API at all, not just be misdocumented",
+      "how_found": "frontend favourites feature failed; tested GET/POST across 8+ path variants plus OPTIONS, all returned identical 404 bodies matching a control nonsense-path request",
+      "impact": "the documented favourites feature cannot be implemented against the live API as specified; emailed vivek@ivy.homes to confirm whether this is broken vs intentionally absent; implemented client-side (localStorage) favourites as a fallback pending a response",
+      "evidence": []
     }
   ]
 }

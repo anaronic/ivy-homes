@@ -112,16 +112,24 @@ export default function ListingsPage() {
             </p>
             <h1 className="text-3xl font-bold">Listings</h1>
           </div>
-          <button
-            type="button"
-            onClick={() => {
-              logout();
-              router.replace("/login");
-            }}
-            className="rounded border border-neutral-300 px-3 py-2 text-sm"
-          >
-            Log out
-          </button>
+          <div className="flex items-center gap-3">
+            <Link
+              href="/favourites"
+              className="rounded border border-neutral-300 px-3 py-2 text-sm"
+            >
+              Saved
+            </Link>
+            <button
+              type="button"
+              onClick={() => {
+                logout();
+                router.replace("/login");
+              }}
+              className="rounded border border-neutral-300 px-3 py-2 text-sm"
+            >
+              Log out
+            </button>
+          </div>
         </div>
 
         {/* filters */}

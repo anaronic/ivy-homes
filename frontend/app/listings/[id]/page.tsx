@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { BASE_URL, apiHeaders } from "@/lib/api";
 import { getValidToken, logout } from "@/lib/auth";
+import { isFavourited, addFavourite, removeFavourite } from "@/lib/favourites";
 
 type Listing = {
   listing_id: string;
@@ -55,7 +56,10 @@ export default function ListingDetailPage() {
         });
         if (!res.ok) throw new Error(`Failed: ${res.status}`);
         const data = await res.json();
-        if (active) setListing(data);
+        if (active) {
+          setListing(data);
+          setSaved(isFavourited(id as string));
+        }
       } catch (err) {
         console.error("Listing detail load failed:", err);
         if (active) setError("Unable to load this listing.");
@@ -70,31 +74,19 @@ export default function ListingDetailPage() {
     };
   }, [id, router]);
 
-  async function toggleFavourite() {
-    const token = await getValidToken();
-    if (!token) return;
-
-    try {
-      if (!saved) {
-        await fetch(`${BASE_URL}/v1/favourites`, {
-          method: "POST",
-          headers: { ...apiHeaders(token), "Content-Type": "application/json" },
-          body: JSON.stringify({ id }),
-        });
-      } else {
-        await fetch(`${BASE_URL}/v1/favourites/${id}`, {
-          method: "DELETE",
-          headers: apiHeaders(token),
-        });
-      }
-      setSaved(!saved);
-    } catch (err) {
-      console.error("Favourite toggle failed:", err);
+  function toggleFavourite() {
+    if (!id) return;
+    if (saved) {
+      removeFavourite(id as string);
+    } else {
+      addFavourite(id as string);
     }
+    setSaved(!saved);
   }
 
   if (loading) return <main className="p-6">Loading…</main>;
-  if (error || !listing) return <main className="p-6 text-red-700">{error || "Not found."}</main>;
+  if (error || !listing)
+    return <main className="p-6 text-red-700">{error || "Not found."}</main>;
 
   return (
     <main className="min-h-screen bg-neutral-50 p-6 text-neutral-900">
@@ -117,7 +109,9 @@ export default function ListingDetailPage() {
             <button
               onClick={toggleFavourite}
               className={`rounded border px-3 py-1 text-sm ${
-                saved ? "border-red-400 bg-red-50 text-red-600" : "border-neutral-300"
+                saved
+                  ? "border-red-400 bg-red-50 text-red-600"
+                  : "border-neutral-300"
               }`}
             >
               {saved ? "♥ Saved" : "♡ Save"}
@@ -131,23 +125,55 @@ export default function ListingDetailPage() {
           </p>
 
           <div className="mt-4 grid grid-cols-2 gap-3 text-sm text-neutral-700 sm:grid-cols-3">
-            <div><span className="text-neutral-500">Type:</span> {listing.property_type ?? "—"}</div>
-            <div><span className="text-neutral-500">BHK:</span> {listing.bedroom ?? "—"}</div>
-            <div><span className="text-neutral-500">Bath:</span> {listing.bathroom ?? "—"}</div>
-            <div><span className="text-neutral-500">Floor:</span> {listing.floor ?? "—"}/{listing.total_floors ?? "—"}</div>
-            <div><span className="text-neutral-500">Carpet area:</span> {listing.carpet_area ?? "—"} sqft</div>
-            <div><span className="text-neutral-500">Super area:</span> {listing.super_built_up_area ?? "—"} sqft</div>
-            <div><span className="text-neutral-500">Furnishing:</span> {listing.furnishing ?? "—"}</div>
-            <div><span className="text-neutral-500">Facing:</span> {listing.facing_direction ?? "—"}</div>
-            <div><span className="text-neutral-500">Parking:</span> {listing.covered_parking ?? "—"}</div>
+            <div>
+              <span className="text-neutral-500">Type:</span>{" "}
+              {listing.property_type ?? "—"}
+            </div>
+            <div>
+              <span className="text-neutral-500">BHK:</span>{" "}
+              {listing.bedroom ?? "—"}
+            </div>
+            <div>
+              <span className="text-neutral-500">Bath:</span>{" "}
+              {listing.bathroom ?? "—"}
+            </div>
+            <div>
+              <span className="text-neutral-500">Floor:</span>{" "}
+              {listing.floor ?? "—"}/{listing.total_floors ?? "—"}
+            </div>
+            <div>
+              <span className="text-neutral-500">Carpet area:</span>{" "}
+              {listing.carpet_area ?? "—"} sqft
+            </div>
+            <div>
+              <span className="text-neutral-500">Super area:</span>{" "}
+              {listing.super_built_up_area ?? "—"} sqft
+            </div>
+            <div>
+              <span className="text-neutral-500">Furnishing:</span>{" "}
+              {listing.furnishing ?? "—"}
+            </div>
+            <div>
+              <span className="text-neutral-500">Facing:</span>{" "}
+              {listing.facing_direction ?? "—"}
+            </div>
+            <div>
+              <span className="text-neutral-500">Parking:</span>{" "}
+              {listing.covered_parking ?? "—"}
+            </div>
           </div>
 
           {listing.description ? (
-            <p className="mt-4 text-sm text-neutral-700">{listing.description}</p>
+            <p className="mt-4 text-sm text-neutral-700">
+              {listing.description}
+            </p>
           ) : null}
 
           <div className="mt-4 border-t pt-4 text-sm text-neutral-600">
-            <p>Posted by {listing.posted_by_name ?? "—"} ({listing.posted_by ?? "—"})</p>
+            <p>
+              Posted by {listing.posted_by_name ?? "—"} (
+              {listing.posted_by ?? "—"})
+            </p>
             <p>{listing.posted_by_contact ?? "—"}</p>
           </div>
         </div>
