@@ -35,6 +35,7 @@ export default function ListingsPage() {
   const [furnishing, setFurnishing] = useState("");
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
     let active = true;
@@ -88,7 +89,21 @@ export default function ListingsPage() {
   }, [router]);
 
   const filtered = useMemo(() => {
+    const query = search.trim().toLowerCase();
+
     return items.filter((item) => {
+      const haystack = [
+        item.apartment_name,
+        item.listing_id,
+        item.locality,
+        item.property_type,
+        item.furnishing,
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+
+      if (query && !haystack.includes(query)) return false;
       if (locality && item.locality?.toLowerCase() !== locality.toLowerCase()) return false;
       if (bedroom && item.bedroom !== Number(bedroom)) return false;
       if (furnishing && item.furnishing !== furnishing) return false;
@@ -96,7 +111,7 @@ export default function ListingsPage() {
       if (maxPrice && (item.price ?? 0) > Number(maxPrice)) return false;
       return true;
     });
-  }, [items, locality, bedroom, furnishing, minPrice, maxPrice]);
+  }, [items, locality, bedroom, furnishing, minPrice, maxPrice, search]);
 
   const localities = useMemo(
     () => Array.from(new Set(items.map((i) => i.locality).filter(Boolean))).sort(),
@@ -114,7 +129,16 @@ export default function ListingsPage() {
           </div>
 
           <div className="surface-card mb-6 rounded-2xl p-3 sm:p-4">
-          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-6">
+            <input
+              type="search"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search listings"
+              className="input-shell xl:col-span-2"
+              aria-label="Search listings"
+            />
+
             <select
               value={locality}
               onChange={(e) => setLocality(e.target.value)}

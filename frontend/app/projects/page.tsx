@@ -35,6 +35,7 @@ export default function ProjectsPage() {
   const [items, setItems] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [search, setSearch] = useState("");
   const router = useRouter();
 
   useEffect(() => {
@@ -85,6 +86,24 @@ export default function ProjectsPage() {
     };
   }, [router]);
 
+  const filteredItems = items.filter((item) => {
+    const query = search.trim().toLowerCase();
+    if (!query) return true;
+
+    const haystack = [
+      item.apartment_name,
+      item.project_id,
+      item.developer_name,
+      item.locality,
+      item.project_status,
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
+
+    return haystack.includes(query);
+  });
+
   return (
     <>
       <Navbar />
@@ -95,14 +114,25 @@ export default function ProjectsPage() {
             <h1 className="text-4xl font-semibold tracking-tight text-slate-900 sm:text-5xl">Projects</h1>
           </div>
 
+          <div className="surface-card mb-6 rounded-2xl p-3 sm:p-4">
+            <input
+              type="search"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search projects"
+              className="input-shell w-full"
+              aria-label="Search projects"
+            />
+          </div>
+
           {error ? <p className="mb-4 rounded-2xl border border-red-200 bg-red-50 p-3 text-sm font-medium text-red-700">{error}</p> : null}
           {loading ? (
             <div className="surface-card rounded-2xl p-6 text-sm text-slate-600">Loading projects…</div>
           ) : (
             <>
-              <p className="mb-4 text-sm text-slate-600"><span className="font-semibold text-slate-800">{items.length}</span> projects</p>
+              <p className="mb-4 text-sm text-slate-600"><span className="font-semibold text-slate-800">{filteredItems.length}</span> projects</p>
               <div className="grid gap-4 md:grid-cols-2">
-                {items.map((item) => {
+                {filteredItems.map((item) => {
                   const realMin = typeof item.price_min === "number" ? toRupees(item.price_min) : null;
                   const realMax = typeof item.price_max === "number" ? toRupees(item.price_max) : null;
 

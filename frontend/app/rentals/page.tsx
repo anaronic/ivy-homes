@@ -11,6 +11,7 @@ type Rental = {
   listing_id: string;
   apartment_name?: string;
   locality?: string;
+  property_type?: string;
   bedroom?: number;
   bathroom?: number;
   furnishing?: string;
@@ -26,6 +27,7 @@ export default function RentalsPage() {
   const [items, setItems] = useState<Rental[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [search, setSearch] = useState("");
   const router = useRouter();
 
   useEffect(() => {
@@ -76,6 +78,24 @@ export default function RentalsPage() {
     };
   }, [router]);
 
+  const filteredItems = items.filter((item) => {
+    const query = search.trim().toLowerCase();
+    if (!query) return true;
+
+    const haystack = [
+      item.apartment_name,
+      item.listing_id,
+      item.locality,
+      item.furnishing,
+      item.property_type,
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
+
+    return haystack.includes(query);
+  });
+
   return (
     <>
       <Navbar />
@@ -86,14 +106,25 @@ export default function RentalsPage() {
             <h1 className="text-4xl font-semibold tracking-tight text-slate-900 sm:text-5xl">Rentals</h1>
           </div>
 
+          <div className="surface-card mb-6 rounded-2xl p-3 sm:p-4">
+            <input
+              type="search"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search rentals"
+              className="input-shell w-full"
+              aria-label="Search rentals"
+            />
+          </div>
+
           {error ? <p className="mb-4 rounded-2xl border border-red-200 bg-red-50 p-3 text-sm font-medium text-red-700">{error}</p> : null}
           {loading ? (
             <div className="surface-card rounded-2xl p-6 text-sm text-slate-600">Loading rentals…</div>
           ) : (
             <>
-              <p className="mb-4 text-sm text-slate-600"><span className="font-semibold text-slate-800">{items.length}</span> rentals</p>
+              <p className="mb-4 text-sm text-slate-600"><span className="font-semibold text-slate-800">{filteredItems.length}</span> rentals</p>
               <div className="grid gap-4 md:grid-cols-2">
-                {items.map((item) => (
+                {filteredItems.map((item) => (
                   <Link
                     key={item.listing_id}
                     href={`/rentals/${item.listing_id}`}
