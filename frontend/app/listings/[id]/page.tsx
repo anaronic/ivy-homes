@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { BASE_URL, apiHeaders } from "@/lib/api";
@@ -91,12 +92,32 @@ export default function ListingDetailPage() {
   return (
     <main className="min-h-screen bg-neutral-50 p-6 text-neutral-900">
       <div className="mx-auto max-w-2xl">
-        <button
-          onClick={() => router.push("/listings")}
-          className="mb-4 text-sm text-neutral-500 hover:underline"
-        >
-          ← Back to listings
-        </button>
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <button
+            onClick={() => router.push("/listings")}
+            className="text-sm text-neutral-500 hover:underline"
+          >
+            ← Back to listings
+          </button>
+          <div className="flex items-center gap-3">
+            <Link href="/rentals" className="rounded border border-neutral-300 px-3 py-2 text-sm">
+              Rentals
+            </Link>
+            <Link href="/projects" className="rounded border border-neutral-300 px-3 py-2 text-sm">
+              Projects
+            </Link>
+            <button
+              type="button"
+              onClick={() => {
+                logout();
+                router.replace("/login");
+              }}
+              className="rounded border border-neutral-300 px-3 py-2 text-sm"
+            >
+              Log out
+            </button>
+          </div>
+        </div>
 
         <div className="rounded border border-neutral-200 bg-white p-6 shadow-sm">
           <p className="text-xs uppercase tracking-[0.2em] text-neutral-500">

@@ -87,9 +87,22 @@ export default function RentalsPage() {
             <Link href="/listings" className="rounded border border-neutral-300 px-3 py-2 text-sm">
               Listings
             </Link>
-            <Link href="/favourites" className="rounded border border-neutral-300 px-3 py-2 text-sm">
-              Saved
+            <Link href="/projects" className="rounded border border-neutral-300 px-3 py-2 text-sm">
+              Projects
             </Link>
+            <Link href="/insights" className="rounded border border-neutral-300 px-3 py-2 text-sm">
+              Insights
+            </Link>
+            <button
+              type="button"
+              onClick={() => {
+                logout();
+                router.replace("/login");
+              }}
+              className="rounded border border-neutral-300 px-3 py-2 text-sm"
+            >
+              Log out
+            </button>
           </div>
         </div>
 

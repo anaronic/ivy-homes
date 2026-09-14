@@ -64,9 +64,24 @@ export default function FavouritesPage() {
       <div className="mx-auto max-w-4xl">
         <div className="mb-6 flex items-center justify-between">
           <h1 className="text-3xl font-bold">Saved Listings</h1>
-          <Link href="/listings" className="text-sm text-neutral-500 hover:underline">
-            ← Back to listings
-          </Link>
+          <div className="flex items-center gap-3">
+            <Link href="/listings" className="rounded border border-neutral-300 px-3 py-2 text-sm">
+              Listings
+            </Link>
+            <Link href="/rentals" className="rounded border border-neutral-300 px-3 py-2 text-sm">
+              Rentals
+            </Link>
+            <button
+              type="button"
+              onClick={() => {
+                logout();
+                router.replace("/login");
+              }}
+              className="rounded border border-neutral-300 px-3 py-2 text-sm"
+            >
+              Log out
+            </button>
+          </div>
         </div>
 
         {error ? <p className="text-red-700">{error}</p> : null}

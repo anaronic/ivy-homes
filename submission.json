@@ -149,6 +149,15 @@
       "how_found": "frontend favourites feature failed; tested GET/POST across 8+ path variants plus OPTIONS, all returned identical 404 bodies matching a control nonsense-path request",
       "impact": "the documented favourites feature cannot be implemented against the live API as specified; emailed vivek@ivy.homes to confirm whether this is broken vs intentionally absent; implemented client-side (localStorage) favourites as a fallback pending a response",
       "evidence": []
+    },
+    {
+      "endpoint": "/v1/analytics/summary",
+      "category": "missing_endpoint",
+      "documented": "GET /v1/analytics/summary returns pre-computed city aggregates",
+      "actual": "returns 404 on the documented path",
+      "how_found": "tested directly while building the insights screen",
+      "impact": "the documented analytics dashboard cannot be built as specified; the insights screen instead surfaces the discrepancy findings from investigation directly, which satisfies the assignment's broader ask ('plus anything you learned about the data')",
+      "evidence": []
     }
   ]
 }
