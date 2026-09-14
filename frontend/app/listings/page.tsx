@@ -103,132 +103,116 @@ export default function ListingsPage() {
   );
 
   return (
-    <main className="min-h-screen bg-neutral-50 p-6 text-neutral-900">
-      <div className="mx-auto max-w-5xl">
-        <div className="mb-6 flex items-center justify-between gap-3">
+    <main className="page-shell px-4 py-6 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-6xl">
+        <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <p className="text-sm uppercase tracking-[0.2em] text-neutral-500">
-              Ivy Homes
-            </p>
-            <h1 className="text-3xl font-bold">Listings</h1>
+            <p className="section-label">Ivy Homes</p>
+            <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">Listings</h1>
           </div>
-          <div className="flex items-center gap-3">
-            <Link
-              href="/favourites"
-              className="rounded border border-neutral-300 px-3 py-2 text-sm"
-            >
-              Saved
-            </Link>
-            <Link
-              href="/rentals"
-              className="rounded border border-neutral-300 px-3 py-2 text-sm"
-            >
-              Rentals
-            </Link>
-            <Link
-              href="/insights"
-              className="rounded border border-neutral-300 px-3 py-2 text-sm"
-            >
-              Insights
-            </Link>
+          <div className="flex flex-wrap items-center gap-2.5">
+            <Link href="/favourites" className="nav-button">Saved</Link>
+            <Link href="/rentals" className="nav-button">Rentals</Link>
+            <Link href="/insights" className="nav-button">Insights</Link>
             <button
               type="button"
               onClick={() => {
                 logout();
                 router.replace("/login");
               }}
-              className="rounded border border-neutral-300 px-3 py-2 text-sm"
+              className="nav-button nav-button--primary"
             >
               Log out
             </button>
           </div>
         </div>
 
-        {/* filters */}
-        <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-5">
-          <select
-            value={locality}
-            onChange={(e) => setLocality(e.target.value)}
-            className="rounded border px-2 py-2 text-sm"
-          >
-            <option value="">All localities</option>
-            {localities.map((loc) => (
-              <option key={loc} value={loc}>{loc}</option>
-            ))}
-          </select>
+        <div className="surface-card mb-6 rounded-2xl p-3 sm:p-4">
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+            <select
+              value={locality}
+              onChange={(e) => setLocality(e.target.value)}
+              className="input-shell"
+            >
+              <option value="">All localities</option>
+              {localities.map((loc) => (
+                <option key={loc} value={loc}>{loc}</option>
+              ))}
+            </select>
 
-          <select
-            value={bedroom}
-            onChange={(e) => setBedroom(e.target.value)}
-            className="rounded border px-2 py-2 text-sm"
-          >
-            <option value="">Any BHK</option>
-            {[1, 2, 3, 4, 5].map((n) => (
-              <option key={n} value={n}>{n} BHK</option>
-            ))}
-          </select>
+            <select
+              value={bedroom}
+              onChange={(e) => setBedroom(e.target.value)}
+              className="input-shell"
+            >
+              <option value="">Any BHK</option>
+              {[1, 2, 3, 4, 5].map((n) => (
+                <option key={n} value={n}>{n} BHK</option>
+              ))}
+            </select>
 
-          <select
-            value={furnishing}
-            onChange={(e) => setFurnishing(e.target.value)}
-            className="rounded border px-2 py-2 text-sm"
-          >
-            <option value="">Any furnishing</option>
-            <option value="unfurnished">Unfurnished</option>
-            <option value="semi-furnished">Semi-furnished</option>
-            <option value="fully-furnished">Fully-furnished</option>
-          </select>
+            <select
+              value={furnishing}
+              onChange={(e) => setFurnishing(e.target.value)}
+              className="input-shell"
+            >
+              <option value="">Any furnishing</option>
+              <option value="unfurnished">Unfurnished</option>
+              <option value="semi-furnished">Semi-furnished</option>
+              <option value="fully-furnished">Fully-furnished</option>
+            </select>
 
-          <input
-            type="number"
-            placeholder="Min price"
-            value={minPrice}
-            onChange={(e) => setMinPrice(e.target.value)}
-            className="rounded border px-2 py-2 text-sm"
-          />
-          <input
-            type="number"
-            placeholder="Max price"
-            value={maxPrice}
-            onChange={(e) => setMaxPrice(e.target.value)}
-            className="rounded border px-2 py-2 text-sm"
-          />
+            <input
+              type="number"
+              placeholder="Min price"
+              value={minPrice}
+              onChange={(e) => setMinPrice(e.target.value)}
+              className="input-shell"
+            />
+            <input
+              type="number"
+              placeholder="Max price"
+              value={maxPrice}
+              onChange={(e) => setMaxPrice(e.target.value)}
+              className="input-shell"
+            />
+          </div>
         </div>
 
         {error ? (
-          <p className="mb-4 rounded border border-red-200 bg-red-50 p-3 text-red-700">
+          <p className="mb-4 rounded-2xl border border-red-200 bg-red-50 p-3 text-sm font-medium text-red-700">
             {error}
           </p>
         ) : null}
 
         {loading ? (
-          <p className="text-neutral-600">Loading listings…</p>
+          <div className="surface-card rounded-2xl p-6 text-sm text-slate-600">Loading listings…</div>
         ) : (
           <>
-            <p className="mb-3 text-sm text-neutral-500">
-              {filtered.length} of {items.length} listings
+            <p className="mb-4 text-sm text-slate-600">
+              <span className="font-semibold text-slate-800">{filtered.length}</span> of <span className="font-semibold text-slate-800">{items.length}</span> listings
             </p>
             <div className="grid gap-4 md:grid-cols-2">
               {filtered.length === 0 ? (
-                <p className="text-neutral-600">No listings match these filters.</p>
+                <div className="surface-card rounded-2xl p-6 text-slate-600">No listings match these filters.</div>
               ) : (
                 filtered.map((item) => (
                   <Link
                     key={item.listing_id}
                     href={`/listings/${item.listing_id}`}
-                    className="block rounded border border-neutral-200 bg-white p-4 shadow-sm hover:border-neutral-400"
+                    className="card-link"
                   >
-                    <p className="text-xs uppercase tracking-[0.2em] text-neutral-500">
+                    <p className="text-[0.68rem] font-bold uppercase tracking-[0.2em] text-slate-500">
                       {item.locality ?? "Locality unavailable"}
                     </p>
-                    <h2 className="mt-2 text-xl font-semibold">
+                    <h2 className="mt-2 text-xl font-semibold tracking-tight text-slate-900">
                       {item.apartment_name ?? item.listing_id}
                     </h2>
-                    <div className="mt-3 flex items-center justify-between text-sm text-neutral-600">
-                      <span>{item.bedroom ?? "—"} BHK</span>
+                    <div className="mt-3 flex items-center justify-between text-sm text-slate-600">
+                      <span className="rounded-full bg-slate-100 px-2.5 py-1 font-medium">{item.bedroom ?? "—"} BHK</span>
                       <span>{item.furnishing ?? "—"}</span>
                     </div>
-                    <p className="mt-3 text-lg font-medium">
+                    <p className="mt-4 text-lg font-semibold text-slate-900">
                       {typeof item.price === "number"
                         ? `₹${item.price.toLocaleString("en-IN")}`
                         : "Price unavailable"}

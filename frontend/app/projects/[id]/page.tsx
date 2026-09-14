@@ -69,73 +69,67 @@ export default function ProjectDetailPage() {
     };
   }, [id, router]);
 
-  if (loading) return <main className="p-6">Loading…</main>;
-  if (error || !project) return <main className="p-6 text-red-700">{error || "Not found."}</main>;
+  if (loading) return <main className="page-shell px-4 py-6 text-slate-700">Loading…</main>;
+  if (error || !project) return <main className="page-shell px-4 py-6 text-red-700">{error || "Not found."}</main>;
 
   const realMin = typeof project.price_min === "number" ? toRupees(project.price_min) : null;
   const realMax = typeof project.price_max === "number" ? toRupees(project.price_max) : null;
 
   return (
-    <main className="min-h-screen bg-neutral-50 p-6 text-neutral-900">
-      <div className="mx-auto max-w-2xl">
-        <div className="mb-4 flex items-center justify-between gap-3">
+    <main className="page-shell px-4 py-6 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-3xl">
+        <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <button
             onClick={() => router.push("/projects")}
-            className="text-sm text-neutral-500 hover:underline"
+            className="inline-flex items-center self-start text-sm font-medium text-slate-600 hover:text-slate-900"
           >
             ← Back to projects
           </button>
-          <div className="flex items-center gap-3">
-            <Link href="/listings" className="rounded border border-neutral-300 px-3 py-2 text-sm">
-              Listings
-            </Link>
-            <Link href="/rentals" className="rounded border border-neutral-300 px-3 py-2 text-sm">
-              Rentals
-            </Link>
+          <div className="flex flex-wrap items-center gap-2.5">
+            <Link href="/listings" className="nav-button">Listings</Link>
+            <Link href="/rentals" className="nav-button">Rentals</Link>
             <button
               type="button"
               onClick={() => {
                 logout();
                 router.replace("/login");
               }}
-              className="rounded border border-neutral-300 px-3 py-2 text-sm"
+              className="nav-button nav-button--primary"
             >
               Log out
             </button>
           </div>
         </div>
 
-        <div className="rounded border border-neutral-200 bg-white p-6 shadow-sm">
-          <p className="text-xs uppercase tracking-[0.2em] text-neutral-500">
-            {project.locality}
-          </p>
-          <h1 className="mt-1 text-2xl font-bold">{project.apartment_name}</h1>
-          <p className="mt-1 text-sm text-neutral-600">{project.developer_name}</p>
+        <div className="surface-card rounded-[28px] p-5 sm:p-6">
+          <p className="section-label">{project.locality}</p>
+          <h1 className="mt-2 text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">{project.apartment_name}</h1>
+          <p className="mt-1 text-sm text-slate-600">{project.developer_name}</p>
 
           {realMin !== null && realMax !== null ? (
-            <p className="mt-3 text-xl font-semibold">
+            <p className="mt-4 text-2xl font-semibold text-slate-900">
               ₹{realMin.toLocaleString("en-IN")} – ₹{realMax.toLocaleString("en-IN")}
             </p>
           ) : null}
 
-          <div className="mt-4 grid grid-cols-2 gap-3 text-sm text-neutral-700 sm:grid-cols-3">
-            <div><span className="text-neutral-500">Status:</span> <span className="capitalize">{project.project_status}</span></div>
-            <div><span className="text-neutral-500">Units:</span> {project.total_units ?? "—"}</div>
-            <div><span className="text-neutral-500">Towers:</span> {project.total_towers ?? "—"}</div>
-            <div><span className="text-neutral-500">Floors:</span> {project.total_floors ?? "—"}</div>
-            <div><span className="text-neutral-500">Launch:</span> {project.launch_date ?? "—"}</div>
-            <div><span className="text-neutral-500">Possession:</span> {project.possession_date ?? "—"}</div>
-            <div><span className="text-neutral-500">Area range:</span> {project.min_area_sqft ?? "—"}–{project.max_area_sqft ?? "—"} sqft</div>
-            <div><span className="text-neutral-500">Listings:</span> {project.total_listings ?? "—"}</div>
-            <div><span className="text-neutral-500">RERA:</span> {project.rera_number ?? "—"}</div>
+          <div className="mt-5 grid grid-cols-2 gap-3 text-sm text-slate-700 sm:grid-cols-3">
+            <div className="grid-card-metric"><span className="text-slate-500">Status:</span> <span className="capitalize">{project.project_status}</span></div>
+            <div className="grid-card-metric"><span className="text-slate-500">Units:</span> {project.total_units ?? "—"}</div>
+            <div className="grid-card-metric"><span className="text-slate-500">Towers:</span> {project.total_towers ?? "—"}</div>
+            <div className="grid-card-metric"><span className="text-slate-500">Floors:</span> {project.total_floors ?? "—"}</div>
+            <div className="grid-card-metric"><span className="text-slate-500">Launch:</span> {project.launch_date ?? "—"}</div>
+            <div className="grid-card-metric"><span className="text-slate-500">Possession:</span> {project.possession_date ?? "—"}</div>
+            <div className="grid-card-metric"><span className="text-slate-500">Area range:</span> {project.min_area_sqft ?? "—"}–{project.max_area_sqft ?? "—"} sqft</div>
+            <div className="grid-card-metric"><span className="text-slate-500">Listings:</span> {project.total_listings ?? "—"}</div>
+            <div className="grid-card-metric"><span className="text-slate-500">RERA:</span> {project.rera_number ?? "—"}</div>
           </div>
 
           {project.amenities?.length ? (
-            <div className="mt-4">
-              <p className="text-sm text-neutral-500">Amenities</p>
-              <div className="mt-1 flex flex-wrap gap-2">
+            <div className="mt-5">
+              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">Amenities</p>
+              <div className="mt-2 flex flex-wrap gap-2">
                 {project.amenities.map((a) => (
-                  <span key={a} className="rounded-full bg-neutral-100 px-3 py-1 text-xs capitalize">
+                  <span key={a} className="badge-soft capitalize">
                     {a}
                   </span>
                 ))}

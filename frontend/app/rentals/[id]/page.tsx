@@ -67,83 +67,77 @@ export default function RentalDetailPage() {
     };
   }, [id, router]);
 
-  if (loading) return <main className="p-6">Loading…</main>;
-  if (error || !rental) return <main className="p-6 text-red-700">{error || "Not found."}</main>;
+  if (loading) return <main className="page-shell px-4 py-6 text-slate-700">Loading…</main>;
+  if (error || !rental) return <main className="page-shell px-4 py-6 text-red-700">{error || "Not found."}</main>;
 
   return (
-    <main className="min-h-screen bg-neutral-50 p-6 text-neutral-900">
-      <div className="mx-auto max-w-2xl">
-        <div className="mb-4 flex items-center justify-between gap-3">
+    <main className="page-shell px-4 py-6 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-3xl">
+        <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <button
             onClick={() => router.push("/rentals")}
-            className="text-sm text-neutral-500 hover:underline"
+            className="inline-flex items-center self-start text-sm font-medium text-slate-600 hover:text-slate-900"
           >
             ← Back to rentals
           </button>
-          <div className="flex items-center gap-3">
-            <Link href="/listings" className="rounded border border-neutral-300 px-3 py-2 text-sm">
-              Listings
-            </Link>
-            <Link href="/projects" className="rounded border border-neutral-300 px-3 py-2 text-sm">
-              Projects
-            </Link>
+          <div className="flex flex-wrap items-center gap-2.5">
+            <Link href="/listings" className="nav-button">Listings</Link>
+            <Link href="/projects" className="nav-button">Projects</Link>
             <button
               type="button"
               onClick={() => {
                 logout();
                 router.replace("/login");
               }}
-              className="rounded border border-neutral-300 px-3 py-2 text-sm"
+              className="nav-button nav-button--primary"
             >
               Log out
             </button>
           </div>
         </div>
 
-        <div className="rounded border border-neutral-200 bg-white p-6 shadow-sm">
-          <p className="text-xs uppercase tracking-[0.2em] text-neutral-500">
-            {rental.locality}
-          </p>
-          <h1 className="mt-1 text-2xl font-bold">
+        <div className="surface-card rounded-[28px] p-5 sm:p-6">
+          <p className="section-label">{rental.locality}</p>
+          <h1 className="mt-2 text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">
             {rental.apartment_name ?? rental.listing_id}
           </h1>
 
-          <div className="mt-2 flex items-baseline gap-4">
-            <p className="text-xl font-semibold">
+          <div className="mt-4 flex flex-wrap items-baseline gap-3">
+            <p className="text-2xl font-semibold text-slate-900">
               {typeof rental.price === "number"
                 ? `₹${rental.price.toLocaleString("en-IN")}/mo`
                 : "—"}
             </p>
             {typeof rental.deposit === "number" ? (
-              <p className="text-sm text-neutral-500">
+              <p className="text-sm text-slate-500">
                 Deposit: ₹{rental.deposit.toLocaleString("en-IN")}
               </p>
             ) : null}
             {typeof rental.maintenance === "number" ? (
-              <p className="text-sm text-neutral-500">
+              <p className="text-sm text-slate-500">
                 Maintenance: ₹{rental.maintenance.toLocaleString("en-IN")}/mo
               </p>
             ) : null}
           </div>
 
-          <div className="mt-4 grid grid-cols-2 gap-3 text-sm text-neutral-700 sm:grid-cols-3">
-            <div><span className="text-neutral-500">Type:</span> {rental.property_type ?? "—"}</div>
-            <div><span className="text-neutral-500">BHK:</span> {rental.bedroom ?? "—"}</div>
-            <div><span className="text-neutral-500">Bath:</span> {rental.bathroom ?? "—"}</div>
-            <div><span className="text-neutral-500">Floor:</span> {rental.floor ?? "—"}/{rental.total_floors ?? "—"}</div>
-            <div><span className="text-neutral-500">Carpet area:</span> {rental.carpet_area ?? "—"} sqft</div>
-            <div><span className="text-neutral-500">Super area:</span> {rental.super_builtup_area ?? "—"} sqft</div>
-            <div><span className="text-neutral-500">Furnishing:</span> {rental.furnishing ?? "—"}</div>
-            <div><span className="text-neutral-500">Facing:</span> {rental.facing_direction ?? "—"}</div>
+          <div className="mt-5 grid grid-cols-2 gap-3 text-sm text-slate-700 sm:grid-cols-3">
+            <div className="grid-card-metric"><span className="text-slate-500">Type:</span> {rental.property_type ?? "—"}</div>
+            <div className="grid-card-metric"><span className="text-slate-500">BHK:</span> {rental.bedroom ?? "—"}</div>
+            <div className="grid-card-metric"><span className="text-slate-500">Bath:</span> {rental.bathroom ?? "—"}</div>
+            <div className="grid-card-metric"><span className="text-slate-500">Floor:</span> {rental.floor ?? "—"}/{rental.total_floors ?? "—"}</div>
+            <div className="grid-card-metric"><span className="text-slate-500">Carpet area:</span> {rental.carpet_area ?? "—"} sqft</div>
+            <div className="grid-card-metric"><span className="text-slate-500">Super area:</span> {rental.super_builtup_area ?? "—"} sqft</div>
+            <div className="grid-card-metric"><span className="text-slate-500">Furnishing:</span> {rental.furnishing ?? "—"}</div>
+            <div className="grid-card-metric"><span className="text-slate-500">Facing:</span> {rental.facing_direction ?? "—"}</div>
           </div>
 
           {rental.description ? (
-            <p className="mt-4 text-sm text-neutral-700">{rental.description}</p>
+            <p className="mt-5 rounded-2xl border border-slate-200 bg-slate-50/80 p-4 text-sm leading-6 text-slate-700">{rental.description}</p>
           ) : null}
 
-          <div className="mt-4 border-t pt-4 text-sm text-neutral-600">
+          <div className="mt-5 border-t border-slate-200 pt-4 text-sm text-slate-600">
             <p>Posted by {rental.posted_by_name ?? "—"} ({rental.posted_by ?? "—"})</p>
-            <p>{rental.posted_by_contact ?? "—"}</p>
+            <p className="mt-1">{rental.posted_by_contact ?? "—"}</p>
           </div>
         </div>
       </div>

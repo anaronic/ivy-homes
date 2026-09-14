@@ -181,71 +181,77 @@ export default function InsightsPage() {
       .map(([bedroom, count]) => ({ bedroom: Number(bedroom), count: Number(count) }));
 
   return (
-    <main className="min-h-screen bg-neutral-50 p-6 text-neutral-900">
-      <div className="mx-auto max-w-3xl">
-        <div className="mb-6 flex items-center justify-between gap-3">
+    <main className="page-shell px-4 py-6 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-4xl">
+        <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <p className="text-sm uppercase tracking-[0.2em] text-neutral-500">Ivy Homes</p>
-            <h1 className="text-3xl font-bold">Insights</h1>
+            <p className="section-label">Ivy Homes</p>
+            <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">Insights</h1>
           </div>
-          <div className="flex items-center gap-3">
-            <Link href="/listings" className="rounded border border-neutral-300 px-3 py-2 text-sm">
-              Listings
-            </Link>
-            <Link href="/rentals" className="rounded border border-neutral-300 px-3 py-2 text-sm">
-              Rentals
-            </Link>
-            <Link href="/projects" className="rounded border border-neutral-300 px-3 py-2 text-sm">
-              Projects
-            </Link>
+          <div className="flex flex-wrap items-center gap-2.5">
+            <Link href="/listings" className="nav-button">Listings</Link>
+            <Link href="/rentals" className="nav-button">Rentals</Link>
+            <Link href="/projects" className="nav-button">Projects</Link>
             <button
               type="button"
               onClick={() => {
                 logout();
                 router.replace("/login");
               }}
-              className="rounded border border-neutral-300 px-3 py-2 text-sm"
+              className="nav-button nav-button--primary"
             >
               Log out
             </button>
           </div>
         </div>
 
-        <section className="mb-8 rounded border border-neutral-200 bg-white p-6 shadow-sm">
-          <h2 className="mb-1 text-lg font-semibold">City Overview</h2>
-          <p className="mb-3 text-xs text-neutral-500">
+        <section className="surface-card mb-8 rounded-[24px] p-5 sm:p-6">
+          <h2 className="text-xl font-semibold tracking-tight text-slate-900">City Overview</h2>
+          <p className="mt-2 text-xs text-slate-500">
             Computed live from listing data — the documented <code>/v1/analytics/summary</code> endpoint returns 404 on this API.
           </p>
           {loading ? (
-            <p className="text-neutral-600">Loading…</p>
+            <p className="mt-4 text-sm text-slate-600">Loading…</p>
           ) : error ? (
-            <p className="text-red-700">{error}</p>
+            <p className="mt-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</p>
           ) : (
             <>
-              <div className="grid grid-cols-2 gap-3 text-sm sm:grid-cols-3">
-                <div><span className="text-neutral-500">Unique listings:</span> {items.length}</div>
-                <div><span className="text-neutral-500">Live listings:</span> {live.length}</div>
-                <div><span className="text-neutral-500">Median price:</span> ₹{Math.round(medianPrice).toLocaleString("en-IN")}</div>
-                <div><span className="text-neutral-500">Median ₹/sqft:</span> {Math.round(medianPsf).toLocaleString("en-IN")}</div>
+              <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                <div className="grid-card-metric">
+                  <p className="text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-slate-500">Unique listings</p>
+                  <p className="mt-2 text-xl font-semibold text-slate-900">{items.length}</p>
+                </div>
+                <div className="grid-card-metric">
+                  <p className="text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-slate-500">Live listings</p>
+                  <p className="mt-2 text-xl font-semibold text-slate-900">{live.length}</p>
+                </div>
+                <div className="grid-card-metric">
+                  <p className="text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-slate-500">Median price</p>
+                  <p className="mt-2 text-xl font-semibold text-slate-900">₹{Math.round(medianPrice).toLocaleString("en-IN")}</p>
+                </div>
+                <div className="grid-card-metric">
+                  <p className="text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-slate-500">Median ₹/sqft</p>
+                  <p className="mt-2 text-xl font-semibold text-slate-900">{Math.round(medianPsf).toLocaleString("en-IN")}</p>
+                </div>
               </div>
 
-              <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                <div>
-                  <p className="mb-1 text-sm font-medium text-neutral-700">By locality</p>
-                  <ul className="text-sm text-neutral-600">
+              <div className="mt-6 grid gap-4 sm:grid-cols-2">
+                <div className="rounded-2xl border border-slate-200 bg-slate-50/60 p-4">
+                  <p className="mb-2 text-sm font-semibold text-slate-700">By locality</p>
+                  <ul className="space-y-2 text-sm text-slate-600">
                     {byLocality.map((entry) => (
-                      <li key={entry.locality} className="flex justify-between capitalize">
-                        <span>{entry.locality}</span><span>{entry.count}</span>
+                      <li key={entry.locality} className="flex items-center justify-between gap-3 capitalize">
+                        <span>{entry.locality}</span><span className="font-medium text-slate-800">{entry.count}</span>
                       </li>
                     ))}
                   </ul>
                 </div>
-                <div>
-                  <p className="mb-1 text-sm font-medium text-neutral-700">By BHK</p>
-                  <ul className="text-sm text-neutral-600">
+                <div className="rounded-2xl border border-slate-200 bg-slate-50/60 p-4">
+                  <p className="mb-2 text-sm font-semibold text-slate-700">By BHK</p>
+                  <ul className="space-y-2 text-sm text-slate-600">
                     {byBhk.map((entry) => (
-                      <li key={entry.bedroom} className="flex justify-between">
-                        <span>{entry.bedroom} BHK</span><span>{entry.count}</span>
+                      <li key={entry.bedroom} className="flex items-center justify-between gap-3">
+                        <span>{entry.bedroom} BHK</span><span className="font-medium text-slate-800">{entry.count}</span>
                       </li>
                     ))}
                   </ul>
@@ -255,27 +261,17 @@ export default function InsightsPage() {
           )}
         </section>
 
-        <section className="rounded border border-amber-200 bg-amber-50 p-6 shadow-sm">
-          <h2 className="mb-3 text-lg font-semibold">Data Quality Findings</h2>
-          <p className="mb-4 text-sm text-neutral-600">
+        <section className="surface-card rounded-[24px] border border-amber-200 bg-amber-50/80 p-5 sm:p-6">
+          <h2 className="text-xl font-semibold tracking-tight text-slate-900">Data Quality Findings</h2>
+          <p className="mt-2 text-sm text-slate-600">
             Discovered while building this app — see <code>submission.json</code> for full details.
           </p>
-          <ul className="space-y-3 text-sm">
-            <li>
-              <strong>Duplicate records:</strong> every listing/rental/project is returned repeated many times by the API (~75x for listings, 8x rentals, 3x projects) — only <strong>50 unique</strong> records exist per collection despite raw totals in the thousands.
-            </li>
-            <li>
-              <strong>4 corrupt listings</strong> report a carpet area far too small for their bedroom count (e.g. a 4BHK at 144 sqft), producing impossible ₹/sqft figures (92.5k–109.4k vs a normal ~3k–13k range).
-            </li>
-            <li>
-              <strong>2 likely fake listings</strong> share a phone number under contradictory seller roles (one &quot;agent,&quot; one &quot;owner&quot;) for two unrelated properties.
-            </li>
-            <li>
-              <strong>43 of 50 projects</strong> report a <code>total_listings</code> count that does not match the actual number of listings tied to that project.
-            </li>
-            <li>
-              <strong>Project prices</strong> are documented as rupees but are actually a mix of lakhs and crores, determined by each value&apos;s own magnitude rather than which field it is in — corrected throughout this app.
-            </li>
+          <ul className="mt-4 space-y-3 text-sm text-slate-700">
+            <li><strong className="text-slate-900">Duplicate records:</strong> every listing/rental/project is returned repeated many times by the API (~75x for listings, 8x rentals, 3x projects) — only <strong>50 unique</strong> records exist per collection despite raw totals in the thousands.</li>
+            <li><strong className="text-slate-900">4 corrupt listings</strong> report a carpet area far too small for their bedroom count (e.g. a 4BHK at 144 sqft), producing impossible ₹/sqft figures (92.5k–109.4k vs a normal ~3k–13k range).</li>
+            <li><strong className="text-slate-900">2 likely fake listings</strong> share a phone number under contradictory seller roles (one &quot;agent,&quot; one &quot;owner&quot;) for two unrelated properties.</li>
+            <li><strong className="text-slate-900">43 of 50 projects</strong> report a <code>total_listings</code> count that does not match the actual number of listings tied to that project.</li>
+            <li><strong className="text-slate-900">Project prices</strong> are documented as rupees but are actually a mix of lakhs and crores, determined by each value&apos;s own magnitude rather than which field it is in — corrected throughout this app.</li>
           </ul>
         </section>
       </div>

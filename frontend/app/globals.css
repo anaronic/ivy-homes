@@ -1,8 +1,19 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  --muted: #475569;
+  --panel: rgba(255, 255, 255, 0.9);
+  --panel-border: rgba(148, 163, 184, 0.22);
+  --primary: #0f172a;
+  --primary-soft: #e2e8f0;
+  --accent: #2563eb;
+  --accent-soft: #dbeafe;
+  --success: #166534;
+  --success-soft: #dcfce7;
+  --danger: #b91c1c;
+  --danger-soft: #fee2e2;
 }
 
 @theme inline {
@@ -12,15 +23,140 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--background);
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top, rgba(59, 130, 246, 0.14), transparent 32%),
+    linear-gradient(180deg, #f8fafc 0%, #eef2ff 100%);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+a,
+button,
+input,
+select {
+  transition: all 180ms ease;
+}
+
+.page-shell {
+  min-height: 100vh;
+  background: transparent;
+}
+
+.surface-card {
+  border: 1px solid var(--panel-border);
+  background: var(--panel);
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
+  backdrop-filter: blur(8px);
+}
+
+.nav-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  border: 1px solid rgba(148, 163, 184, 0.5);
+  background: rgba(255, 255, 255, 0.82);
+  padding: 0.7rem 1rem;
+  font-size: 0.8rem;
+  line-height: 1;
+  font-weight: 600;
+  color: var(--foreground);
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+}
+
+.nav-button:hover {
+  border-color: rgba(37, 99, 235, 0.4);
+  background: rgba(239, 246, 255, 0.95);
+  transform: translateY(-1px);
+}
+
+.nav-button--primary {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  border-color: transparent;
+  color: white;
+}
+
+.nav-button--primary:hover {
+  background: linear-gradient(135deg, #111827 0%, #1f2937 100%);
+}
+
+.section-label {
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #64748b;
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 9999px;
+  background: rgba(219, 234, 254, 0.72);
+  color: #1d4ed8;
+  padding: 0.38rem 0.7rem;
+  font-size: 0.68rem;
+  line-height: 1;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.input-shell {
+  border: 1px solid rgba(148, 163, 184, 0.7);
+  background: rgba(255, 255, 255, 0.8);
+  color: var(--foreground);
+  border-radius: 0.9rem;
+  padding: 0.75rem 0.9rem;
+  box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.input-shell:focus {
+  outline: 2px solid rgba(59, 130, 246, 0.45);
+  border-color: rgba(59, 130, 246, 0.65);
+  background: #fff;
+}
+
+.card-link {
+  display: block;
+  border: 1px solid rgba(148, 163, 184, 0.26);
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 1.2rem;
+  padding: 1rem 1.1rem;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.05);
+}
+
+.card-link:hover {
+  border-color: rgba(59, 130, 246, 0.42);
+  box-shadow: 0 14px 28px rgba(15, 23, 42, 0.08);
+  transform: translateY(-2px);
+}
+
+.grid-card-metric {
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  border-radius: 0.9rem;
+  background: rgba(248, 250, 252, 0.9);
+  padding: 0.8rem 0.9rem;
+}
+
+.badge-soft {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border-radius: 9999px;
+  background: rgba(240, 249, 255, 0.9);
+  color: #0f766e;
+  padding: 0.38rem 0.65rem;
+  font-size: 0.7rem;
+  font-weight: 700;
 }

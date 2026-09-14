@@ -85,117 +85,83 @@ export default function ListingDetailPage() {
     setSaved(!saved);
   }
 
-  if (loading) return <main className="p-6">Loading…</main>;
+  if (loading) return <main className="page-shell px-4 py-6 text-slate-700">Loading…</main>;
   if (error || !listing)
-    return <main className="p-6 text-red-700">{error || "Not found."}</main>;
+    return <main className="page-shell px-4 py-6 text-red-700">{error || "Not found."}</main>;
 
   return (
-    <main className="min-h-screen bg-neutral-50 p-6 text-neutral-900">
-      <div className="mx-auto max-w-2xl">
-        <div className="mb-4 flex items-center justify-between gap-3">
+    <main className="page-shell px-4 py-6 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-3xl">
+        <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <button
             onClick={() => router.push("/listings")}
-            className="text-sm text-neutral-500 hover:underline"
+            className="inline-flex items-center self-start text-sm font-medium text-slate-600 hover:text-slate-900"
           >
             ← Back to listings
           </button>
-          <div className="flex items-center gap-3">
-            <Link href="/rentals" className="rounded border border-neutral-300 px-3 py-2 text-sm">
-              Rentals
-            </Link>
-            <Link href="/projects" className="rounded border border-neutral-300 px-3 py-2 text-sm">
-              Projects
-            </Link>
+          <div className="flex flex-wrap items-center gap-2.5">
+            <Link href="/rentals" className="nav-button">Rentals</Link>
+            <Link href="/projects" className="nav-button">Projects</Link>
             <button
               type="button"
               onClick={() => {
                 logout();
                 router.replace("/login");
               }}
-              className="rounded border border-neutral-300 px-3 py-2 text-sm"
+              className="nav-button nav-button--primary"
             >
               Log out
             </button>
           </div>
         </div>
 
-        <div className="rounded border border-neutral-200 bg-white p-6 shadow-sm">
-          <p className="text-xs uppercase tracking-[0.2em] text-neutral-500">
-            {listing.locality}
-          </p>
-          <div className="mt-1 flex items-start justify-between">
-            <h1 className="text-2xl font-bold">
-              {listing.apartment_name ?? listing.listing_id}
-            </h1>
+        <div className="surface-card rounded-[28px] p-5 sm:p-6">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <p className="section-label">{listing.locality}</p>
+              <h1 className="mt-2 text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">
+                {listing.apartment_name ?? listing.listing_id}
+              </h1>
+            </div>
             <button
               onClick={toggleFavourite}
-              className={`rounded border px-3 py-1 text-sm ${
+              className={`rounded-full border px-3.5 py-2 text-sm font-semibold ${
                 saved
-                  ? "border-red-400 bg-red-50 text-red-600"
-                  : "border-neutral-300"
+                  ? "border-red-200 bg-red-50 text-red-600"
+                  : "border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50"
               }`}
             >
               {saved ? "♥ Saved" : "♡ Save"}
             </button>
           </div>
 
-          <p className="mt-2 text-xl font-semibold">
+          <p className="mt-4 text-2xl font-semibold text-slate-900">
             {typeof listing.price === "number"
               ? `₹${listing.price.toLocaleString("en-IN")}`
               : "Price unavailable"}
           </p>
 
-          <div className="mt-4 grid grid-cols-2 gap-3 text-sm text-neutral-700 sm:grid-cols-3">
-            <div>
-              <span className="text-neutral-500">Type:</span>{" "}
-              {listing.property_type ?? "—"}
-            </div>
-            <div>
-              <span className="text-neutral-500">BHK:</span>{" "}
-              {listing.bedroom ?? "—"}
-            </div>
-            <div>
-              <span className="text-neutral-500">Bath:</span>{" "}
-              {listing.bathroom ?? "—"}
-            </div>
-            <div>
-              <span className="text-neutral-500">Floor:</span>{" "}
-              {listing.floor ?? "—"}/{listing.total_floors ?? "—"}
-            </div>
-            <div>
-              <span className="text-neutral-500">Carpet area:</span>{" "}
-              {listing.carpet_area ?? "—"} sqft
-            </div>
-            <div>
-              <span className="text-neutral-500">Super area:</span>{" "}
-              {listing.super_built_up_area ?? "—"} sqft
-            </div>
-            <div>
-              <span className="text-neutral-500">Furnishing:</span>{" "}
-              {listing.furnishing ?? "—"}
-            </div>
-            <div>
-              <span className="text-neutral-500">Facing:</span>{" "}
-              {listing.facing_direction ?? "—"}
-            </div>
-            <div>
-              <span className="text-neutral-500">Parking:</span>{" "}
-              {listing.covered_parking ?? "—"}
-            </div>
+          <div className="mt-5 grid grid-cols-2 gap-3 text-sm text-slate-700 sm:grid-cols-3">
+            <div className="grid-card-metric"><span className="text-slate-500">Type:</span> {listing.property_type ?? "—"}</div>
+            <div className="grid-card-metric"><span className="text-slate-500">BHK:</span> {listing.bedroom ?? "—"}</div>
+            <div className="grid-card-metric"><span className="text-slate-500">Bath:</span> {listing.bathroom ?? "—"}</div>
+            <div className="grid-card-metric"><span className="text-slate-500">Floor:</span> {listing.floor ?? "—"}/{listing.total_floors ?? "—"}</div>
+            <div className="grid-card-metric"><span className="text-slate-500">Carpet area:</span> {listing.carpet_area ?? "—"} sqft</div>
+            <div className="grid-card-metric"><span className="text-slate-500">Super area:</span> {listing.super_built_up_area ?? "—"} sqft</div>
+            <div className="grid-card-metric"><span className="text-slate-500">Furnishing:</span> {listing.furnishing ?? "—"}</div>
+            <div className="grid-card-metric"><span className="text-slate-500">Facing:</span> {listing.facing_direction ?? "—"}</div>
+            <div className="grid-card-metric"><span className="text-slate-500">Parking:</span> {listing.covered_parking ?? "—"}</div>
           </div>
 
           {listing.description ? (
-            <p className="mt-4 text-sm text-neutral-700">
+            <p className="mt-5 rounded-2xl border border-slate-200 bg-slate-50/80 p-4 text-sm leading-6 text-slate-700">
               {listing.description}
             </p>
           ) : null}
 
-          <div className="mt-4 border-t pt-4 text-sm text-neutral-600">
-            <p>
-              Posted by {listing.posted_by_name ?? "—"} (
-              {listing.posted_by ?? "—"})
-            </p>
-            <p>{listing.posted_by_contact ?? "—"}</p>
+          <div className="mt-5 border-t border-slate-200 pt-4 text-sm text-slate-600">
+            <p>Posted by {listing.posted_by_name ?? "—"} ({listing.posted_by ?? "—"})</p>
+            <p className="mt-1">{listing.posted_by_contact ?? "—"}</p>
           </div>
         </div>
       </div>
