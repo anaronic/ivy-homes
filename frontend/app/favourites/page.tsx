@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import Navbar from "@/app/components/Navbar";
 import { BASE_URL, apiHeaders } from "@/lib/api";
 import { getValidToken, logout } from "@/lib/auth";
-import { getFavouriteIds } from "@/lib/favourites";
+import { getFavouriteIds, removeFavourite } from "@/lib/favourites";
 
 type Listing = {
   listing_id: string;
@@ -60,6 +60,11 @@ export default function FavouritesPage() {
     };
   }, [router]);
 
+  function handleRemoveFavourite(id: string) {
+    removeFavourite(id);
+    setItems((current) => current.filter((item) => item.listing_id !== id));
+  }
+
   return (
     <>
       <Navbar />
@@ -78,22 +83,31 @@ export default function FavouritesPage() {
           ) : (
             <div className="grid gap-4 md:grid-cols-2">
               {items.map((item) => (
-                <Link
+                <div
                   key={item.listing_id}
-                  href={`/listings/${item.listing_id}`}
-                  className="card-link"
+                  className="card-link flex flex-col gap-3 p-4"
                 >
-                  <p className="text-[0.68rem] font-bold uppercase tracking-[0.2em] text-slate-500">
-                    {item.locality}
-                  </p>
-                  <h2 className="mt-2 text-xl font-semibold tracking-tight text-slate-900">
-                    {item.apartment_name ?? item.listing_id}
-                  </h2>
-                  <p className="mt-2 text-sm text-slate-600">{item.bedroom ?? "—"} BHK · {item.furnishing ?? "—"}</p>
-                  <p className="mt-4 text-lg font-semibold text-slate-900">
-                    {typeof item.price === "number" ? `₹${item.price.toLocaleString("en-IN")}` : "—"}
-                  </p>
-                </Link>
+                  <Link href={`/listings/${item.listing_id}`} className="block">
+                    <p className="text-[0.68rem] font-bold uppercase tracking-[0.2em] text-slate-500">
+                      {item.locality}
+                    </p>
+                    <h2 className="mt-2 text-xl font-semibold tracking-tight text-slate-900">
+                      {item.apartment_name ?? item.listing_id}
+                    </h2>
+                    <p className="mt-2 text-sm text-slate-600">{item.bedroom ?? "—"} BHK · {item.furnishing ?? "—"}</p>
+                    <p className="mt-4 text-lg font-semibold text-slate-900">
+                      {typeof item.price === "number" ? `₹${item.price.toLocaleString("en-IN")}` : "—"}
+                    </p>
+                  </Link>
+
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveFavourite(item.listing_id)}
+                    className="mt-auto inline-flex items-center justify-center rounded-full border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-600 transition hover:border-red-300 hover:bg-red-100"
+                  >
+                    Remove
+                  </button>
+                </div>
               ))}
             </div>
           )}
