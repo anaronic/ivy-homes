@@ -115,6 +115,15 @@
       "evidence": ["MAG-4003885"]
     },
     {
+      "endpoint": "/auth/refresh",
+      "category": "auth",
+      "documented": "not documented at all - doc claims no refresh flow exists",
+      "actual": "a working POST /auth/refresh endpoint exists; takes {\"refresh_token\": \"...\"} in the body and returns a new access_token/refresh_token pair identical in shape to /auth/login's response, with the same 900-second (15 min) expiry",
+      "how_found": "called /auth/refresh directly with a refresh_token obtained from login",
+      "impact": "any long-running session must implement this refresh flow to survive past 15 minutes; the frontend's login persistence requirement depends on it",
+      "evidence": []
+    },
+    {
       "endpoint": "/v1/listings",
       "category": "fraud",
       "documented": "N/A",
@@ -122,6 +131,15 @@
       "how_found": "grouped live listings by posted_by_contact; found one contact shared across listings with inconsistent posted_by roles, which a single legitimate individual cannot hold across two unrelated properties",
       "impact": "these listings appear designed to look like an independent owner posting when the contact identity is shared with an agent-attributed listing, consistent with a fake or misrepresented identity used to generate enquiries",
       "evidence": ["100-4000289", "SQU-4001810"]
+    },
+    {
+      "endpoint": "/v1/listing/{id}",
+      "category": "missing_endpoint",
+      "documented": "GET /v1/listing/{listing_id} returns a single listing",
+      "actual": "this path returns 404; the working endpoint is GET /v1/listings/{listing_id} (plural, matching the collection path)",
+      "how_found": "frontend detail page failed to load with the documented singular path; tested both singular and plural paths directly, singular 404s, plural returns the listing",
+      "impact": "any client built per the documented singular path cannot fetch individual listings at all",
+      "evidence": []
     }
   ]
 }
