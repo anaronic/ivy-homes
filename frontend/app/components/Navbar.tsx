@@ -47,12 +47,12 @@ export default function Navbar() {
             </div>
           </div>
 
-          <nav className="flex flex-wrap items-center gap-1.5 rounded-full border border-white/10 bg-white/5 p-1.5 shadow-[0_10px_30px_rgba(15,23,42,0.18)]">
+          <nav className="flex w-full max-w-full flex-wrap items-center justify-center gap-1.5 rounded-full border border-white/10 bg-white/5 p-1.5 shadow-[0_10px_30px_rgba(15,23,42,0.18)] lg:w-auto lg:justify-end lg:overflow-visible">
             {navItems.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
-                className={`inline-flex items-center rounded-full px-3.5 py-2 text-sm font-medium transition-all duration-200 ${
+                className={`inline-flex shrink-0 items-center whitespace-nowrap rounded-full px-3.5 py-2 text-sm font-medium transition-all duration-200 ${
                   isActive(item.href)
                     ? "bg-white text-slate-900 shadow-sm"
                     : "text-slate-200 hover:bg-white/8 hover:text-white"
@@ -65,7 +65,7 @@ export default function Navbar() {
 
             <Link
               href="/favourites"
-              className={`inline-flex items-center rounded-full px-3.5 py-2 text-sm font-medium transition-all duration-200 ${
+              className={`inline-flex shrink-0 items-center whitespace-nowrap rounded-full px-3.5 py-2 text-sm font-medium transition-all duration-200 ${
                 isSavedActive ? "bg-white text-slate-900 shadow-sm" : "text-slate-200 hover:bg-white/8 hover:text-white"
               }`}
             >
@@ -78,7 +78,7 @@ export default function Navbar() {
                 logout();
                 router.replace("/login");
               }}
-              className="inline-flex items-center rounded-full border border-white/10 bg-slate-100 px-3.5 py-2 text-sm font-semibold text-slate-900 transition-colors duration-200 hover:bg-white"
+              className="inline-flex shrink-0 items-center whitespace-nowrap rounded-full border border-white/10 bg-slate-100 px-3.5 py-2 text-sm font-semibold text-slate-900 transition-colors duration-200 hover:bg-white"
             >
               Log out
             </button>
