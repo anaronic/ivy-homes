@@ -267,6 +267,7 @@ export default function InsightsPage() {
             Discovered while building this app — see <code>submission.json</code> for full details.
           </p>
           <ul className="mt-4 space-y-3 text-sm text-slate-700">
+            <li><strong className="text-slate-900">Missing endpoints:</strong> <code>/v1/analytics/summary</code> and <code>/v1/favourites</code> are not live on the API; the app replaces the first with live-computed city metrics and the second with a local saved-listings fallback.</li>
             <li><strong className="text-slate-900">Duplicate records:</strong> every listing/rental/project is returned repeated many times by the API (~75x for listings, 8x rentals, 3x projects) — only <strong>50 unique</strong> records exist per collection despite raw totals in the thousands.</li>
             <li><strong className="text-slate-900">4 corrupt listings</strong> report a carpet area far too small for their bedroom count (e.g. a 4BHK at 144 sqft), producing impossible ₹/sqft figures (92.5k–109.4k vs a normal ~3k–13k range).</li>
             <li><strong className="text-slate-900">2 likely fake listings</strong> share a phone number under contradictory seller roles (one &quot;agent,&quot; one &quot;owner&quot;) for two unrelated properties.</li>

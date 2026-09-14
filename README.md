@@ -83,7 +83,7 @@ We directly tested the documented endpoints and discovered multiple broken or mi
 - `/v1/analytics/summary` returned 404 on the documented path
 - `/v1/listing/{id}` returned 404, while the working endpoint was `/v1/listings/{id}` (plural)
 
-These were not assumptions; they were observed by direct HTTP testing against the live API.
+These were not assumptions; they were observed by direct HTTP testing against the live API. Confirmed with Ivy Homes that no endpoints are disabled per-key, so 404s found reflect genuine documentation/API mismatches, not key-specific restrictions.
 
 ## What turned out fine
 
