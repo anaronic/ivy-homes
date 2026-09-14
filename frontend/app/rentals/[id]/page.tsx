@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import Navbar from "@/app/components/Navbar";
 import { BASE_URL, apiHeaders } from "@/lib/api";
 import { getValidToken, logout } from "@/lib/auth";
 
@@ -71,32 +72,20 @@ export default function RentalDetailPage() {
   if (error || !rental) return <main className="page-shell px-4 py-6 text-red-700">{error || "Not found."}</main>;
 
   return (
-    <main className="page-shell px-4 py-6 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-3xl">
-        <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <button
-            onClick={() => router.push("/rentals")}
-            className="inline-flex items-center self-start text-sm font-medium text-slate-600 hover:text-slate-900"
-          >
-            ← Back to rentals
-          </button>
-          <div className="flex flex-wrap items-center gap-2.5">
-            <Link href="/listings" className="nav-button">Listings</Link>
-            <Link href="/projects" className="nav-button">Projects</Link>
+    <>
+      <Navbar />
+      <main className="page-shell px-4 py-6 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-3xl">
+          <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <button
-              type="button"
-              onClick={() => {
-                logout();
-                router.replace("/login");
-              }}
-              className="nav-button nav-button--primary"
+              onClick={() => router.push("/rentals")}
+              className="inline-flex items-center self-start text-sm font-medium text-slate-600 hover:text-slate-900"
             >
-              Log out
+              ← Back to rentals
             </button>
           </div>
-        </div>
 
-        <div className="surface-card rounded-[28px] p-5 sm:p-6">
+          <div className="surface-card rounded-[28px] p-5 sm:p-6">
           <p className="section-label">{rental.locality}</p>
           <h1 className="mt-2 text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">
             {rental.apartment_name ?? rental.listing_id}
@@ -139,8 +128,9 @@ export default function RentalDetailPage() {
             <p>Posted by {rental.posted_by_name ?? "—"} ({rental.posted_by ?? "—"})</p>
             <p className="mt-1">{rental.posted_by_contact ?? "—"}</p>
           </div>
+          </div>
         </div>
-      </div>
-    </main>
+      </main>
+    </>
   );
 }

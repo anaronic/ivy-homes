@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import Navbar from "@/app/components/Navbar";
 import { BASE_URL, apiHeaders } from "@/lib/api";
 import { getValidToken, logout } from "@/lib/auth";
 
@@ -76,32 +77,20 @@ export default function ProjectDetailPage() {
   const realMax = typeof project.price_max === "number" ? toRupees(project.price_max) : null;
 
   return (
-    <main className="page-shell px-4 py-6 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-3xl">
-        <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <button
-            onClick={() => router.push("/projects")}
-            className="inline-flex items-center self-start text-sm font-medium text-slate-600 hover:text-slate-900"
-          >
-            ← Back to projects
-          </button>
-          <div className="flex flex-wrap items-center gap-2.5">
-            <Link href="/listings" className="nav-button">Listings</Link>
-            <Link href="/rentals" className="nav-button">Rentals</Link>
+    <>
+      <Navbar />
+      <main className="page-shell px-4 py-6 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-3xl">
+          <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <button
-              type="button"
-              onClick={() => {
-                logout();
-                router.replace("/login");
-              }}
-              className="nav-button nav-button--primary"
+              onClick={() => router.push("/projects")}
+              className="inline-flex items-center self-start text-sm font-medium text-slate-600 hover:text-slate-900"
             >
-              Log out
+              ← Back to projects
             </button>
           </div>
-        </div>
 
-        <div className="surface-card rounded-[28px] p-5 sm:p-6">
+          <div className="surface-card rounded-[28px] p-5 sm:p-6">
           <p className="section-label">{project.locality}</p>
           <h1 className="mt-2 text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">{project.apartment_name}</h1>
           <p className="mt-1 text-sm text-slate-600">{project.developer_name}</p>
@@ -136,8 +125,9 @@ export default function ProjectDetailPage() {
               </div>
             </div>
           ) : null}
+          </div>
         </div>
-      </div>
-    </main>
+      </main>
+    </>
   );
 }

@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import Navbar from "@/app/components/Navbar";
 import { BASE_URL, apiHeaders } from "@/lib/api";
 import { getValidToken, logout } from "@/lib/auth";
 
@@ -103,31 +104,16 @@ export default function ListingsPage() {
   );
 
   return (
-    <main className="page-shell px-4 py-6 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-6xl">
-        <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          <div>
+    <>
+      <Navbar />
+      <main className="page-shell px-4 py-6 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-6xl">
+          <div className="mb-6 flex flex-col gap-3">
             <p className="section-label">Ivy Homes</p>
-            <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">Listings</h1>
+            <h1 className="text-4xl font-semibold tracking-tight text-slate-900 sm:text-5xl">Listings</h1>
           </div>
-          <div className="flex flex-wrap items-center gap-2.5">
-            <Link href="/favourites" className="nav-button">Saved</Link>
-            <Link href="/rentals" className="nav-button">Rentals</Link>
-            <Link href="/insights" className="nav-button">Insights</Link>
-            <button
-              type="button"
-              onClick={() => {
-                logout();
-                router.replace("/login");
-              }}
-              className="nav-button nav-button--primary"
-            >
-              Log out
-            </button>
-          </div>
-        </div>
 
-        <div className="surface-card mb-6 rounded-2xl p-3 sm:p-4">
+          <div className="surface-card mb-6 rounded-2xl p-3 sm:p-4">
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
             <select
               value={locality}
@@ -179,51 +165,52 @@ export default function ListingsPage() {
           </div>
         </div>
 
-        {error ? (
-          <p className="mb-4 rounded-2xl border border-red-200 bg-red-50 p-3 text-sm font-medium text-red-700">
-            {error}
-          </p>
-        ) : null}
-
-        {loading ? (
-          <div className="surface-card rounded-2xl p-6 text-sm text-slate-600">Loading listings…</div>
-        ) : (
-          <>
-            <p className="mb-4 text-sm text-slate-600">
-              <span className="font-semibold text-slate-800">{filtered.length}</span> of <span className="font-semibold text-slate-800">{items.length}</span> listings
+          {error ? (
+            <p className="mb-4 rounded-2xl border border-red-200 bg-red-50 p-3 text-sm font-medium text-red-700">
+              {error}
             </p>
-            <div className="grid gap-4 md:grid-cols-2">
-              {filtered.length === 0 ? (
-                <div className="surface-card rounded-2xl p-6 text-slate-600">No listings match these filters.</div>
-              ) : (
-                filtered.map((item) => (
-                  <Link
-                    key={item.listing_id}
-                    href={`/listings/${item.listing_id}`}
-                    className="card-link"
-                  >
-                    <p className="text-[0.68rem] font-bold uppercase tracking-[0.2em] text-slate-500">
-                      {item.locality ?? "Locality unavailable"}
-                    </p>
-                    <h2 className="mt-2 text-xl font-semibold tracking-tight text-slate-900">
-                      {item.apartment_name ?? item.listing_id}
-                    </h2>
-                    <div className="mt-3 flex items-center justify-between text-sm text-slate-600">
-                      <span className="rounded-full bg-slate-100 px-2.5 py-1 font-medium">{item.bedroom ?? "—"} BHK</span>
-                      <span>{item.furnishing ?? "—"}</span>
-                    </div>
-                    <p className="mt-4 text-lg font-semibold text-slate-900">
-                      {typeof item.price === "number"
-                        ? `₹${item.price.toLocaleString("en-IN")}`
-                        : "Price unavailable"}
-                    </p>
-                  </Link>
-                ))
-              )}
-            </div>
-          </>
-        )}
-      </div>
-    </main>
+          ) : null}
+
+          {loading ? (
+            <div className="surface-card rounded-2xl p-6 text-sm text-slate-600">Loading listings…</div>
+          ) : (
+            <>
+              <p className="mb-4 text-sm text-slate-600">
+                <span className="font-semibold text-slate-800">{filtered.length}</span> of <span className="font-semibold text-slate-800">{items.length}</span> listings
+              </p>
+              <div className="grid gap-4 md:grid-cols-2">
+                {filtered.length === 0 ? (
+                  <div className="surface-card rounded-2xl p-6 text-slate-600">No listings match these filters.</div>
+                ) : (
+                  filtered.map((item) => (
+                    <Link
+                      key={item.listing_id}
+                      href={`/listings/${item.listing_id}`}
+                      className="card-link"
+                    >
+                      <p className="text-[0.68rem] font-bold uppercase tracking-[0.2em] text-slate-500">
+                        {item.locality ?? "Locality unavailable"}
+                      </p>
+                      <h2 className="mt-2 text-xl font-semibold tracking-tight text-slate-900">
+                        {item.apartment_name ?? item.listing_id}
+                      </h2>
+                      <div className="mt-3 flex items-center justify-between text-sm text-slate-600">
+                        <span className="rounded-full bg-slate-100 px-2.5 py-1 font-medium">{item.bedroom ?? "—"} BHK</span>
+                        <span>{item.furnishing ?? "—"}</span>
+                      </div>
+                      <p className="mt-4 text-lg font-semibold text-slate-900">
+                        {typeof item.price === "number"
+                          ? `₹${item.price.toLocaleString("en-IN")}`
+                          : "Price unavailable"}
+                      </p>
+                    </Link>
+                  ))
+                )}
+              </div>
+            </>
+          )}
+        </div>
+      </main>
+    </>
   );
 }

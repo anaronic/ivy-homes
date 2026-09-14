@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import Navbar from "@/app/components/Navbar";
 import { BASE_URL, apiHeaders } from "@/lib/api";
 import { getValidToken, logout } from "@/lib/auth";
 import { isFavourited, addFavourite, removeFavourite } from "@/lib/favourites";
@@ -90,32 +91,20 @@ export default function ListingDetailPage() {
     return <main className="page-shell px-4 py-6 text-red-700">{error || "Not found."}</main>;
 
   return (
-    <main className="page-shell px-4 py-6 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-3xl">
-        <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <button
-            onClick={() => router.push("/listings")}
-            className="inline-flex items-center self-start text-sm font-medium text-slate-600 hover:text-slate-900"
-          >
-            ← Back to listings
-          </button>
-          <div className="flex flex-wrap items-center gap-2.5">
-            <Link href="/rentals" className="nav-button">Rentals</Link>
-            <Link href="/projects" className="nav-button">Projects</Link>
+    <>
+      <Navbar />
+      <main className="page-shell px-4 py-6 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-3xl">
+          <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <button
-              type="button"
-              onClick={() => {
-                logout();
-                router.replace("/login");
-              }}
-              className="nav-button nav-button--primary"
+              onClick={() => router.push("/listings")}
+              className="inline-flex items-center self-start text-sm font-medium text-slate-600 hover:text-slate-900"
             >
-              Log out
+              ← Back to listings
             </button>
           </div>
-        </div>
 
-        <div className="surface-card rounded-[28px] p-5 sm:p-6">
+          <div className="surface-card rounded-[28px] p-5 sm:p-6">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <p className="section-label">{listing.locality}</p>
@@ -163,8 +152,9 @@ export default function ListingDetailPage() {
             <p>Posted by {listing.posted_by_name ?? "—"} ({listing.posted_by ?? "—"})</p>
             <p className="mt-1">{listing.posted_by_contact ?? "—"}</p>
           </div>
+          </div>
         </div>
-      </div>
-    </main>
+      </main>
+    </>
   );
 }

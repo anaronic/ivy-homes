@@ -1,25 +1,28 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f8fafc;
-  --foreground: #0f172a;
-  --muted: #475569;
-  --panel: rgba(255, 255, 255, 0.9);
-  --panel-border: rgba(148, 163, 184, 0.22);
+  --background: #f3f6fb;
+  --foreground: #101828;
+  --muted: #475467;
+  --panel: rgba(255, 255, 255, 0.88);
+  --panel-border: rgba(148, 163, 184, 0.2);
   --primary: #0f172a;
   --primary-soft: #e2e8f0;
-  --accent: #2563eb;
-  --accent-soft: #dbeafe;
+  --accent: #2f6fed;
+  --accent-soft: #dfeaff;
   --success: #166534;
   --success-soft: #dcfce7;
   --danger: #b91c1c;
   --danger-soft: #fee2e2;
+  --ink: #0b1220;
+  --surface-strong: #111827;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-inter);
+  --font-display: var(--font-lexend);
   --font-mono: var(--font-geist-mono);
 }
 
@@ -30,10 +33,20 @@ html {
 body {
   min-height: 100vh;
   background:
-    radial-gradient(circle at top, rgba(59, 130, 246, 0.14), transparent 32%),
-    linear-gradient(180deg, #f8fafc 0%, #eef2ff 100%);
+    radial-gradient(circle at top, rgba(47, 111, 237, 0.14), transparent 26%),
+    linear-gradient(180deg, #f8fafc 0%, #eef3fb 100%);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-inter), Arial, Helvetica, sans-serif;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-lexend), var(--font-inter), sans-serif;
+  letter-spacing: -0.04em;
 }
 
 * {
@@ -48,15 +61,15 @@ select {
 }
 
 .page-shell {
-  min-height: 100vh;
+  min-height: calc(100vh - 72px);
   background: transparent;
 }
 
 .surface-card {
   border: 1px solid var(--panel-border);
-  background: var(--panel);
-  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
-  backdrop-filter: blur(8px);
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.06);
+  backdrop-filter: blur(10px);
 }
 
 .nav-button {
@@ -64,36 +77,37 @@ select {
   align-items: center;
   justify-content: center;
   border-radius: 9999px;
-  border: 1px solid rgba(148, 163, 184, 0.5);
-  background: rgba(255, 255, 255, 0.82);
-  padding: 0.7rem 1rem;
-  font-size: 0.8rem;
+  border: 1px solid rgba(148, 163, 184, 0.4);
+  background: rgba(255, 255, 255, 0.78);
+  padding: 0.72rem 1rem;
+  font-size: 0.82rem;
   line-height: 1;
   font-weight: 600;
   color: var(--foreground);
-  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
 }
 
 .nav-button:hover {
-  border-color: rgba(37, 99, 235, 0.4);
-  background: rgba(239, 246, 255, 0.95);
+  border-color: rgba(47, 111, 237, 0.42);
+  background: rgba(239, 246, 255, 0.94);
   transform: translateY(-1px);
 }
 
 .nav-button--primary {
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  background: linear-gradient(135deg, #101828 0%, #1f2937 100%);
   border-color: transparent;
   color: white;
 }
 
 .nav-button--primary:hover {
-  background: linear-gradient(135deg, #111827 0%, #1f2937 100%);
+  background: linear-gradient(135deg, #0f172a 0%, #111827 100%);
+  color: white;
 }
 
 .section-label {
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  font-size: 0.7rem;
+  font-size: 0.72rem;
   font-weight: 700;
   color: #64748b;
 }
@@ -102,9 +116,9 @@ select {
   display: inline-flex;
   align-items: center;
   border-radius: 9999px;
-  background: rgba(219, 234, 254, 0.72);
+  background: rgba(219, 234, 254, 0.74);
   color: #1d4ed8;
-  padding: 0.38rem 0.7rem;
+  padding: 0.42rem 0.75rem;
   font-size: 0.68rem;
   line-height: 1;
   font-weight: 700;
@@ -113,17 +127,17 @@ select {
 }
 
 .input-shell {
-  border: 1px solid rgba(148, 163, 184, 0.7);
-  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(148, 163, 184, 0.72);
+  background: rgba(255, 255, 255, 0.82);
   color: var(--foreground);
-  border-radius: 0.9rem;
-  padding: 0.75rem 0.9rem;
-  box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.04);
+  border-radius: 1rem;
+  padding: 0.82rem 0.95rem;
+  box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.03);
 }
 
 .input-shell:focus {
-  outline: 2px solid rgba(59, 130, 246, 0.45);
-  border-color: rgba(59, 130, 246, 0.65);
+  outline: 2px solid rgba(47, 111, 237, 0.22);
+  border-color: rgba(47, 111, 237, 0.65);
   background: #fff;
 }
 
@@ -131,22 +145,23 @@ select {
   display: block;
   border: 1px solid rgba(148, 163, 184, 0.26);
   background: rgba(255, 255, 255, 0.9);
-  border-radius: 1.2rem;
-  padding: 1rem 1.1rem;
-  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.05);
+  border-radius: 1.45rem;
+  padding: 1.1rem 1.15rem;
+  box-shadow: 0 14px 34px rgba(15, 23, 42, 0.06);
 }
 
 .card-link:hover {
-  border-color: rgba(59, 130, 246, 0.42);
-  box-shadow: 0 14px 28px rgba(15, 23, 42, 0.08);
+  border-color: rgba(47, 111, 237, 0.35);
+  box-shadow: 0 18px 44px rgba(15, 23, 42, 0.1);
   transform: translateY(-2px);
 }
 
 .grid-card-metric {
-  border: 1px solid rgba(148, 163, 184, 0.25);
-  border-radius: 0.9rem;
-  background: rgba(248, 250, 252, 0.9);
-  padding: 0.8rem 0.9rem;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 1rem;
+  background: linear-gradient(180deg, rgba(248, 250, 252, 0.96), rgba(255, 255, 255, 0.88));
+  padding: 0.85rem 0.95rem;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
 }
 
 .badge-soft {
@@ -154,9 +169,9 @@ select {
   align-items: center;
   gap: 0.35rem;
   border-radius: 9999px;
-  background: rgba(240, 249, 255, 0.9);
+  background: rgba(224, 242, 254, 0.8);
   color: #0f766e;
-  padding: 0.38rem 0.65rem;
+  padding: 0.38rem 0.7rem;
   font-size: 0.7rem;
   font-weight: 700;
 }

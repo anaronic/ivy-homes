@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import Navbar from "@/app/components/Navbar";
 import { BASE_URL, apiHeaders } from "@/lib/api";
 import { getValidToken, logout } from "@/lib/auth";
 
@@ -85,70 +86,56 @@ export default function ProjectsPage() {
   }, [router]);
 
   return (
-    <main className="page-shell px-4 py-6 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-6xl">
-        <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          <div>
+    <>
+      <Navbar />
+      <main className="page-shell px-4 py-6 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-6xl">
+          <div className="mb-6 flex flex-col gap-3">
             <p className="section-label">Ivy Homes</p>
-            <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">Projects</h1>
+            <h1 className="text-4xl font-semibold tracking-tight text-slate-900 sm:text-5xl">Projects</h1>
           </div>
-          <div className="flex flex-wrap items-center gap-2.5">
-            <Link href="/listings" className="nav-button">Listings</Link>
-            <Link href="/rentals" className="nav-button">Rentals</Link>
-            <Link href="/insights" className="nav-button">Insights</Link>
-            <button
-              type="button"
-              onClick={() => {
-                logout();
-                router.replace("/login");
-              }}
-              className="nav-button nav-button--primary"
-            >
-              Log out
-            </button>
-          </div>
-        </div>
 
-        {error ? <p className="mb-4 rounded-2xl border border-red-200 bg-red-50 p-3 text-sm font-medium text-red-700">{error}</p> : null}
-        {loading ? (
-          <div className="surface-card rounded-2xl p-6 text-sm text-slate-600">Loading projects…</div>
-        ) : (
-          <>
-            <p className="mb-4 text-sm text-slate-600"><span className="font-semibold text-slate-800">{items.length}</span> projects</p>
-            <div className="grid gap-4 md:grid-cols-2">
-              {items.map((item) => {
-                const realMin = typeof item.price_min === "number" ? toRupees(item.price_min) : null;
-                const realMax = typeof item.price_max === "number" ? toRupees(item.price_max) : null;
+          {error ? <p className="mb-4 rounded-2xl border border-red-200 bg-red-50 p-3 text-sm font-medium text-red-700">{error}</p> : null}
+          {loading ? (
+            <div className="surface-card rounded-2xl p-6 text-sm text-slate-600">Loading projects…</div>
+          ) : (
+            <>
+              <p className="mb-4 text-sm text-slate-600"><span className="font-semibold text-slate-800">{items.length}</span> projects</p>
+              <div className="grid gap-4 md:grid-cols-2">
+                {items.map((item) => {
+                  const realMin = typeof item.price_min === "number" ? toRupees(item.price_min) : null;
+                  const realMax = typeof item.price_max === "number" ? toRupees(item.price_max) : null;
 
-                return (
-                  <Link
-                    key={item.project_id}
-                    href={`/projects/${item.project_id}`}
-                    className="card-link"
-                  >
-                    <p className="text-[0.68rem] font-bold uppercase tracking-[0.2em] text-slate-500">
-                      {item.locality}
-                    </p>
-                    <h2 className="mt-2 text-xl font-semibold tracking-tight text-slate-900">{item.apartment_name}</h2>
-                    <p className="mt-1 text-sm text-slate-600">{item.developer_name}</p>
-                    <p className="mt-3 text-sm text-slate-600 capitalize">
-                      {item.project_status} · {item.total_units ?? "—"} units
-                    </p>
-                    <p className="mt-2 text-sm text-slate-600">
-                      {item.min_area_sqft ?? "—"}–{item.max_area_sqft ?? "—"} sqft
-                    </p>
-                    {realMin !== null && realMax !== null ? (
-                      <p className="mt-3 text-lg font-semibold text-slate-900">
-                        ₹{realMin.toLocaleString("en-IN")} – ₹{realMax.toLocaleString("en-IN")}
+                  return (
+                    <Link
+                      key={item.project_id}
+                      href={`/projects/${item.project_id}`}
+                      className="card-link"
+                    >
+                      <p className="text-[0.68rem] font-bold uppercase tracking-[0.2em] text-slate-500">
+                        {item.locality}
                       </p>
-                    ) : null}
-                  </Link>
-                );
-              })}
-            </div>
-          </>
-        )}
-      </div>
-    </main>
+                      <h2 className="mt-2 text-xl font-semibold tracking-tight text-slate-900">{item.apartment_name}</h2>
+                      <p className="mt-1 text-sm text-slate-600">{item.developer_name}</p>
+                      <p className="mt-3 text-sm text-slate-600 capitalize">
+                        {item.project_status} · {item.total_units ?? "—"} units
+                      </p>
+                      <p className="mt-2 text-sm text-slate-600">
+                        {item.min_area_sqft ?? "—"}–{item.max_area_sqft ?? "—"} sqft
+                      </p>
+                      {realMin !== null && realMax !== null ? (
+                        <p className="mt-3 text-lg font-semibold text-slate-900">
+                          ₹{realMin.toLocaleString("en-IN")} – ₹{realMax.toLocaleString("en-IN")}
+                        </p>
+                      ) : null}
+                    </Link>
+                  );
+                })}
+              </div>
+            </>
+          )}
+        </div>
+      </main>
+    </>
   );
 }

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import Navbar from "@/app/components/Navbar";
 import { BASE_URL, apiHeaders } from "@/lib/api";
 import { getValidToken, logout } from "@/lib/auth";
 
@@ -181,31 +182,16 @@ export default function InsightsPage() {
       .map(([bedroom, count]) => ({ bedroom: Number(bedroom), count: Number(count) }));
 
   return (
-    <main className="page-shell px-4 py-6 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-4xl">
-        <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          <div>
+    <>
+      <Navbar />
+      <main className="page-shell px-4 py-6 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-4xl">
+          <div className="mb-6 flex flex-col gap-3">
             <p className="section-label">Ivy Homes</p>
-            <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">Insights</h1>
+            <h1 className="text-4xl font-semibold tracking-tight text-slate-900 sm:text-5xl">Insights</h1>
           </div>
-          <div className="flex flex-wrap items-center gap-2.5">
-            <Link href="/listings" className="nav-button">Listings</Link>
-            <Link href="/rentals" className="nav-button">Rentals</Link>
-            <Link href="/projects" className="nav-button">Projects</Link>
-            <button
-              type="button"
-              onClick={() => {
-                logout();
-                router.replace("/login");
-              }}
-              className="nav-button nav-button--primary"
-            >
-              Log out
-            </button>
-          </div>
-        </div>
 
-        <section className="surface-card mb-8 rounded-[24px] p-5 sm:p-6">
+          <section className="surface-card mb-8 rounded-[24px] p-5 sm:p-6">
           <h2 className="text-xl font-semibold tracking-tight text-slate-900">City Overview</h2>
           <p className="mt-2 text-xs text-slate-500">
             Computed live from listing data — the documented <code>/v1/analytics/summary</code> endpoint returns 404 on this API.
@@ -306,7 +292,8 @@ export default function InsightsPage() {
             </ul>
           </div>
         </section>
-      </div>
-    </main>
+        </div>
+      </main>
+    </>
   );
 }
